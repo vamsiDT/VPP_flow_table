@@ -43,7 +43,7 @@ int refresh = 15000000;
 /* Flow classification function */
 always_inline void
 flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1){
-if (head == NULL){
+if (PREDICT_FALSE(head == NULL)){
 	numflows = 0;
 	packets = 0;
     nodet[modulox][0] = malloc(sizeof(flowcount_t));
@@ -151,14 +151,14 @@ if (head == NULL){
     }
     packets++;
 
-    if (packets > refresh){
+    if (PREDICT_FALSE(packets > refresh)){
 
         packets = 0;
         flowcount_t * tmpnode;
         flowcount_t * branch;
         tmpnode = tail;
         u32 count = 0;
-        while (tmpnode != NULL && count < numflows){
+        while (PREDICT_TRUE(tmpnode != NULL && count < numflows)){
         count++;
         if(tmpnode->packetstamp <= (-refresh))
                         tmpnode->packetstamp = (-refresh);
