@@ -18,3 +18,16 @@ $VPP_ROOT = /your/vpp/directory/ ;
 3.show flow number - To show the number of flows in the flow table.
 
 4.clear flow counters - To clear the flow table.
+
+#Description
+
+    1.Currently the table size is 1024*4;
+    
+    2.Refresh for determining active flows is done after every 15 million packets;
+    
+#TODO
+
+    1.Choose a good hash function for this application and update;
+    2.Add an option to enable or diable the classification ;
+    3.Also add option to enable or diable only on a specific interface.
+    4.Extend this to multi-threading scenario with multiple tx-queues.
