@@ -9,7 +9,7 @@ $VPP_ROOT = /your/vpp/directory/ ;
     2. look for the comments "start of extra code; end of extra code" to find what are the change to be made.
 
 CLI COMMANDS
-show flow counters - To show all the flows registered in the flow table.
-show activeflow counters - To show only the flows which appeared in the last 15million packets.
-show flow number - To show the number of flows in the flow table.
-clear flow counters - To clear the flow table.
+1.show flow counters - To show all the flows registered in the flow table.
+2.show activeflow counters - To show only the flows which appeared in the last 15million packets.
+3.show flow number - To show the number of flows in the flow table.
+4.clear flow counters - To clear the flow table.
