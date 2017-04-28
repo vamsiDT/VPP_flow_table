@@ -1,5 +1,5 @@
 # VPP_flow_table
-Modification with in VPP src for flow classification and determining active flows
+Modification within VPP src for flow classification and determining active flows
 $VPP_ROOT = /your/vpp/directory/ ;
 1. Copy the flow_table.h to $VPP_ROOT/src/vnet/ip/
 2. "#include <vnet/ip/flow_table.h>" //add this line to ip4_forward.c in $VPP_ROOT/src/vnet/ip ;
