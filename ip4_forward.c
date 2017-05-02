@@ -2538,8 +2538,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
     	hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 	hash10 = (( (u64)(ip1->src_address.as_u32)) << 32 ) | ip1->dst_address.as_u32 ;
     	hash11 = (((u64)(udp1->src_port ) << 16 ) | (u64)(udp1->dst_port)) | (((u64)(vnet_buffer (p1)->sw_if_index[VLIB_TX])) << 32) ;
-	modulo0 = (1+ ((hash00)+(hash01)))%TABLESIZE;
-	modulo1 = (1+ ((hash10)+(hash11)))%TABLESIZE;
+	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
+	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
 	flow_table_classify(modulo0,hash00,hash01);
 	flow_table_classify(modulo1,hash10,hash11);
 	
@@ -2716,7 +2716,7 @@ if (~(is_midchain || is_mcast)){
     hash00 = (( (u64)(ip0->src_address.as_u32)) << 32 ) | ip0->dst_address.as_u32 ;
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
-	modulo0 = (1+ ((hash00)+(hash01)))%TABLESIZE;
+	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	flow_table_classify(modulo0,hash00,hash01);
 
 }

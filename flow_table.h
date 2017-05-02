@@ -296,9 +296,9 @@ clear_flow_counters_fn (vlib_main_t * vm,
 			nodet[i][j] = NULL;
 			}
 		}
-		free(head);
-		free(tail);
-		free(previousnode);
+		//free(head);
+		//free(tail);
+		//free(previousnode);
 		head = NULL;
 		tail = NULL;
 		previousnode = NULL;
