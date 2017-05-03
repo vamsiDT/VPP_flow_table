@@ -37,6 +37,6 @@ $VPP_ROOT = /your/vpp/directory/ ;
 #TODO
 
     1.Choose a good hash function for this application and update;
-    2.Add an option to enable or diable the classification ;
-    3.Also add option to enable or diable only on a specific interface.
+    2.Add an option to enable or disable the classification ;
+    3.Also add option to enable or disable only on a specific interface.
     4.Extend this to multi-threading scenario with multiple tx-queues.
