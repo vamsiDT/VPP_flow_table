@@ -13,7 +13,7 @@ $VPP_ROOT = /your/vpp/directory/ ;
    
    //add these lines to ip4_forward.c in $VPP_ROOT/src/vnet/ip ;
 
-3. Find the function " ip4_rewrite_inline in ip4_forward.c"
+3. Find the function " ip4_rewrite_inline" in ip4_forward.c
 
 4. Modify the function
     1. Please check the function in this repository for changes that are to be made.
