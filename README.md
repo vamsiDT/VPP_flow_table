@@ -5,7 +5,10 @@ $VPP_ROOT = /your/vpp/directory/ ;
 
 1. Copy the flow_table.h to $VPP_ROOT/src/vnet/ip/
 
-2. "#include <vnet/ip/flow_table.h>","#include <vnet/ip/flow_table_var.h>","#include <vnet/ip/flow_table_cli.h>"//add these lines to ip4_forward.c in $VPP_ROOT/src/vnet/ip ;
+2. "#include <vnet/ip/flow_table.h>"
+   "#include <vnet/ip/flow_table_var.h>"
+   "#include <vnet/ip/flow_table_cli.h>"
+//add these lines to ip4_forward.c in $VPP_ROOT/src/vnet/ip ;
 
 3. Find the function " ip4_rewrite_inline in ip4_forward.c"
 
