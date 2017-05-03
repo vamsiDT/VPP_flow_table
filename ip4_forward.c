@@ -2531,7 +2531,6 @@ ip4_rewrite_inline (vlib_main_t * vm,
 				    ip0, ip1, sizeof (ethernet_header_t));
 
 //////////////start of extra code///////////////
-	
 	if (~(is_midchain || is_mcast)){
 		
 	hash00 = (( (u64)(ip0->src_address.as_u32)) << 32 ) | ip0->dst_address.as_u32 ;
@@ -2544,7 +2543,6 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	flow_table_classify(modulo1,hash10,hash11);
 	
 }
-
 ////////////end of extra code//////////////
 
 
