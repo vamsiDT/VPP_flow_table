@@ -9,7 +9,6 @@ show_flow_counters_fn (vlib_main_t * vm,
                           unformat_input_t * input, vlib_cli_command_t * cmd)
 {
 	clib_error_t *error = 0;
-
 	vlib_cli_output (vm, "Flow Counters ID\tInterface_TX\tSrc_ip\t\t\tDst_ip\t\tSrc_Port\t\tDst_Port\n");
     u32 count = 0;
     flowcount_t *  current;
