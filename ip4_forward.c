@@ -53,6 +53,8 @@
 #include <vnet/mfib/mfib_table.h>	/* for mFIB table and entry creation */
 #include <math.h>
 #include <vnet/ip/flow_table.h>
+#include <vnet/ip/flow_table_var.h>
+#include <vnet/ip/flow_table_cli.h>
 /**
  * @file
  * @brief IPv4 Forwarding.
