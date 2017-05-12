@@ -40,7 +40,6 @@ always_inline void
 flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx ){
 if (PREDICT_FALSE(head == NULL)){
 	numflows = 0;
-	packets = 0;
     nodet[modulox][0] = malloc(sizeof(flowcount_t));
     numflows++;
     (nodet[modulox][0])->srcdst = hashx0;
