@@ -1,4 +1,5 @@
 # VPP_flow_table
+
 Modification within VPP src for flow classification and determining active flows
 
 $VPP_ROOT = /your/vpp/directory/ ;
@@ -23,16 +24,13 @@ $VPP_ROOT = /your/vpp/directory/ ;
 
     1.show flow counters - To show all the flows registered in the flow table.
 
-    2.show activeflow counters - To show only the flows which appeared in the last 15million packets.
+    2.show flow number - To show the number of flows in the flow table.
 
-    3.show flow number - To show the number of flows in the flow table.
-
-    4.clear flow counters - To clear the flow table.
+    3.clear flow counters - To clear the flow table.
 
 #Description
 
     1.Currently the table size is 1024*4;    
-    2.Refresh for determining active flows is done after every 15 million packets;
     
 #TODO
 

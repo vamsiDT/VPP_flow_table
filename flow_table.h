@@ -32,7 +32,6 @@ extern flowcount_t *  head ;
 extern flowcount_t *  previousnode;
 extern flowcount_t *  tail;
 extern int numflows;
-extern int refresh;
 
 
 /* Flow classification function */
