@@ -19,6 +19,8 @@ show_flow_counters_fn (vlib_main_t * vm,
     u32 dstip;
     u32 srcport;
     u32 dstport;
+    int pktlen;
+
    while (current != NULL && count < numflows){
         count++;
         ifindex = (current->swsrcdstport)>>32 ;
@@ -26,7 +28,9 @@ show_flow_counters_fn (vlib_main_t * vm,
         dstip = (u32)((current->srcdst)&0x00000000ffffffff) ;
         srcport = (u16)(((current->swsrcdstport)&0x00000000ffffffff)>>16) ;
         dstport = (u16)((current->swsrcdstport)&0x000000000000ffff) ;
-        vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport));
+        pktlen = current->npackets;
+        
+        vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
 
         branch = current->branchnext;
     if (branch != NULL && count < numflows){
@@ -36,7 +40,9 @@ show_flow_counters_fn (vlib_main_t * vm,
         dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
         srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
         dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-        vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport));
+        pktlen = branch->npackets;
+        
+        vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
 
         branch = current->branchnext->branchnext;
 
@@ -47,7 +53,9 @@ show_flow_counters_fn (vlib_main_t * vm,
         	dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
         	srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
         	dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-            vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport));
+        	pktlen = branch->npackets;
+        	
+            vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
 
             branch = current->branchnext->branchnext->branchnext;
 
@@ -58,7 +66,9 @@ show_flow_counters_fn (vlib_main_t * vm,
         		dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
         		srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
         		dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-                vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport));
+        		pktlen = branch->npackets;
+        		
+                vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
                 }
             }
         }
@@ -105,7 +115,11 @@ clear_flow_counters_fn (vlib_main_t * vm,
         return error;
 }
 
+
+
+
 /*****Function to show active flows in the flow table with in the packetstamp range -refresh to refresh*****/
+/*
 static clib_error_t *
 show_activeflow_counters_fn (vlib_main_t * vm,
                           unformat_input_t * input, vlib_cli_command_t * cmd)
@@ -185,6 +199,7 @@ show_activeflow_counters_fn (vlib_main_t * vm,
         return error;
 
 }
+*/
 
 /*****CLI commands*****/
 
@@ -194,12 +209,13 @@ VLIB_CLI_COMMAND (show_flow_counters_command, static) = {
   .function = show_flow_counters_fn,
 };
 
+/*
 VLIB_CLI_COMMAND (show_activeflow_counters_command, static) = {
   .path = "show activeflow counters",
   .short_help = "show activeflow counters",
   .function = show_activeflow_counters_fn,
 };
-
+*/
 VLIB_CLI_COMMAND (show_numberof_flows_command, static) = {
   .path = "show flow number",
   .short_help = "show flow number",

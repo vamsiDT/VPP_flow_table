@@ -53,6 +53,8 @@
 #include <vnet/mfib/mfib_table.h>	/* for mFIB table and entry creation */
 #include <math.h>
 #include <vnet/ip/flow_table.h>
+#include <vnet/ip/flow_table_var.h>
+#include <vnet/ip/flow_table_cli.h>
 /**
  * @file
  * @brief IPv4 Forwarding.
@@ -2348,6 +2350,7 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	u64 hash00,hash01;
 	u64 hash10,hash11;
 	u32 modulo0,modulo1;
+	u16 pktlen0,pktlen1;
 //////////////end of extra code///////////////
 	  u32 pi0, rw_len0, next0, error0, checksum0, adj_index0;
 	  u32 pi1, rw_len1, next1, error1, checksum1, adj_index1;
@@ -2539,8 +2542,10 @@ ip4_rewrite_inline (vlib_main_t * vm,
     	hash11 = (((u64)(udp1->src_port ) << 16 ) | (u64)(udp1->dst_port)) | (((u64)(vnet_buffer (p1)->sw_if_index[VLIB_TX])) << 32) ;
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
-	flow_table_classify(modulo0,hash00,hash01);
-	flow_table_classify(modulo1,hash10,hash11);
+	pktlen0 = b0->current_length;
+	pktlen1 = b1->current_length;
+	flow_table_classify(modulo0,hash00,hash01,pktlen0);
+	flow_table_classify(modulo1,hash10,hash11,pktlen1);
 	
 }
 ////////////end of extra code//////////////
@@ -2593,6 +2598,7 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	udp_header_t *udp0;
 	u64 hash00,hash01;
 	u32 modulo0;
+	u16 pktlen0;
 //////////////end of extra code///////////////	
 	  u32 pi0, rw_len0, adj_index0, next0, error0, checksum0;
 	  u32 tx_sw_if_index0;
@@ -2715,7 +2721,8 @@ if (~(is_midchain || is_mcast)){
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
-	flow_table_classify(modulo0,hash00,hash01);
+	pktlen0 = b0->current_length;
+	flow_table_classify(modulo0,hash00,hash01,pktlen0);
 
 }
 ///////////////end of extra code///////////

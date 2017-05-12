@@ -20,7 +20,7 @@ typedef struct flowcount{
 	struct flowcount * prev;
 	u64 srcdst;
 	u64 swsrcdstport;
-	int packetstamp;
+	int npackets;
 	int vqueue;
 	struct flowcount * branchnext;
     struct flowcount * next;
@@ -32,13 +32,12 @@ extern flowcount_t *  head ;
 extern flowcount_t *  previousnode;
 extern flowcount_t *  tail;
 extern int numflows;
-extern int packets;
 extern int refresh;
 
 
 /* Flow classification function */
 always_inline void
-flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1){
+flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx ){
 if (PREDICT_FALSE(head == NULL)){
 	numflows = 0;
 	packets = 0;
@@ -47,7 +46,7 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox][0])->srcdst = hashx0;
     (nodet[modulox][0])->swsrcdstport = hashx1;
     (nodet[modulox][0])->update = (nodet[modulox][0]);
-    (nodet[modulox][0])->packetstamp = packets;
+    (nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
     head = nodet[modulox][0] ;
     previousnode = head ;
 	tail = head;
@@ -62,7 +61,7 @@ if (PREDICT_FALSE(head == NULL)){
     previousnode = nodet[modulox][0];
     tail = nodet[modulox][0] ;
     (nodet[modulox][0])->update = (nodet[modulox][0]);
-    (nodet[modulox][0])->packetstamp = packets;
+    (nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
     }
     else if  ((nodet[modulox][1]) == NULL)
     {
@@ -73,10 +72,10 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox][1])->srcdst = hashx0;
     (nodet[modulox][1])->swsrcdstport = hashx1;
     (nodet[modulox][0])->branchnext = (nodet[modulox][1]);
-    (nodet[modulox][1])->packetstamp = packets;
+    (nodet[modulox][1])->npackets=(nodet[modulox][1])->npackets + pktlenx;
         }
         else
-        (nodet[modulox][0])->packetstamp = packets;
+        (nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
     }
     else if ( nodet[modulox][2] == NULL )
     {
@@ -87,13 +86,13 @@ if (PREDICT_FALSE(head == NULL)){
     			(nodet[modulox][2])->srcdst = hashx0;
     			(nodet[modulox][2])->swsrcdstport = hashx1;
     			(nodet[modulox][1])->branchnext = nodet[modulox][2];
-    			(nodet[modulox][2])->packetstamp = packets;
+    			(nodet[modulox][2])->npackets=(nodet[modulox][2])->npackets + pktlenx;
     		}
     		else
-    		(nodet[modulox][1])->packetstamp = packets;
+    		(nodet[modulox][1])->npackets=(nodet[modulox][1])->npackets + pktlenx;
         }
         else
-        (nodet[modulox][0])->packetstamp = packets;
+        (nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
      }
     else if ( nodet[modulox][3] == NULL ){
         if ( ((nodet[modulox][0])->srcdst != hashx0) || ((nodet[modulox][0])->swsrcdstport != hashx1) ) {
@@ -105,16 +104,16 @@ if (PREDICT_FALSE(head == NULL)){
     				(nodet[modulox][3])->swsrcdstport = hashx1;
     				(nodet[modulox][2])->branchnext = nodet[modulox][3];
     				(nodet[modulox][3])->branchnext = nodet[modulox][0];
-    				(nodet[modulox][3])->packetstamp = packets;
+    				(nodet[modulox][3])->npackets++;
     			}
     			else
-    			(nodet[modulox][2])->packetstamp = packets;
+    			(nodet[modulox][2])->npackets=(nodet[modulox][2])->npackets + pktlenx;
         	}
         	else
-    		(nodet[modulox][1])->packetstamp = packets;
+    		(nodet[modulox][1])->npackets=(nodet[modulox][1])->npackets + pktlenx;
 		}
 		else
-		(nodet[modulox][0])->packetstamp = packets;
+		(nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
 	}
 
 
@@ -130,69 +129,22 @@ if (PREDICT_FALSE(head == NULL)){
 
     					((nodet[modulox][0])->update)->srcdst = hashx0;
     					((nodet[modulox][0])->update)->swsrcdstport = hashx1;
-    					((nodet[modulox][0])->update)->packetstamp = packets;
+    					((nodet[modulox][0])->update)->npackets=((nodet[modulox][0])->update)->npackets + pktlenx;
     					(nodet[modulox][0])->update = ((nodet[modulox][0])->update)->branchnext ;
     				}
     				else
-    				(nodet[modulox][3])->packetstamp = packets;
+    				(nodet[modulox][3])->npackets=(nodet[modulox][3])->npackets + pktlenx;
     			}
     			else
-    			(nodet[modulox][2])->packetstamp = packets;
+    			(nodet[modulox][2])->npackets=(nodet[modulox][2])->npackets + pktlenx;
     		}
     		else
-    		(nodet[modulox][1])->packetstamp = packets;
+    		(nodet[modulox][1])->npackets=(nodet[modulox][1])->npackets + pktlenx;
     	}
     	else
-    	(nodet[modulox][0])->packetstamp = packets;
+    	(nodet[modulox][0])->npackets=(nodet[modulox][0])->npackets + pktlenx;
     }
-    packets++;
-
-    if (PREDICT_FALSE(packets > refresh)){
-
-        packets = 0;
-        flowcount_t * tmpnode;
-        flowcount_t * branch;
-        tmpnode = tail;
-        u32 count = 0;
-        while (PREDICT_TRUE(tmpnode != NULL && count < numflows)){
-        count++;
-        if(tmpnode->packetstamp <= (-refresh))
-                        tmpnode->packetstamp = (-refresh);
-        else
-        tmpnode->packetstamp = (tmpnode->packetstamp)-(refresh);
-
-        branch = tmpnode->branchnext;
-    if (branch != NULL && count < numflows){
-        count++;
-        if(branch->packetstamp <= (-refresh))
-                        branch->packetstamp = (-refresh);
-        else
-        branch->packetstamp = (branch->packetstamp)-(refresh);
-
-        branch = tmpnode->branchnext->branchnext;
-
-        if((branch != NULL && count < numflows)){
-            count++;
-            if(branch->packetstamp <= (-refresh))
-                        branch->packetstamp = (-refresh);
-            else
-            branch->packetstamp = (branch->packetstamp)-(refresh);
-            branch = tmpnode->branchnext->branchnext->branchnext;
-
-            if((branch != NULL) && count < numflows){
-            count++;
-            if(branch->packetstamp <= (-refresh))
-                        branch->packetstamp = (-refresh);
-            else
-            branch->packetstamp = (branch->packetstamp)-(refresh);
-
-            }
-        }
-        }
-        tmpnode = tmpnode->prev;
-        }
-
-	}
+    
 
 }
 
