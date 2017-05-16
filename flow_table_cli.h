@@ -101,8 +101,8 @@ clear_flow_counters_fn (vlib_main_t * vm,
 	clib_error_t *error = 0;
 	for ( int i =0;i<TABLESIZE;i++){
 		for (int j =0;j<4;j++){
-			free(nodet[i][j]);
-			nodet[i][j] = NULL;
+			free(nodet[i]+j);
+			(nodet[i]) = NULL;
 			}
 		}
 		//free(head);
