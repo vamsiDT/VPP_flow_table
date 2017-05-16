@@ -41,6 +41,10 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx ){
 if (PREDICT_FALSE(head == NULL)){
 	numflows = 0;
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
+    (nodet[modulox] + 0)->branchnext = NULL;
+    (nodet[modulox] + 1)->branchnext = NULL;
+    (nodet[modulox] + 2)->branchnext = NULL;
+    (nodet[modulox] + 3)->branchnext = NULL;
     numflows++;
     (nodet[modulox] + 0)->srcdst = hashx0;
     (nodet[modulox] + 0)->swsrcdstport = hashx1;
@@ -52,6 +56,10 @@ if (PREDICT_FALSE(head == NULL)){
     }
     else if ( (nodet[modulox] + 0) == NULL ){
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
+    (nodet[modulox] + 0)->branchnext = NULL;
+    (nodet[modulox] + 1)->branchnext = NULL;
+    (nodet[modulox] + 2)->branchnext = NULL;
+    (nodet[modulox] + 3)->branchnext = NULL;
     numflows++;
     (nodet[modulox] + 0)->srcdst = hashx0;
     (nodet[modulox] + 0)->swsrcdstport = hashx1;
