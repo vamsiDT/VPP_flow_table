@@ -110,7 +110,7 @@ if (PREDICT_FALSE(head == NULL)){
     				(nodet[modulox] + 3)->swsrcdstport = hashx1;
     				(nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
     				(nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
-    				(nodet[modulox] + 3)->npackets++;
+    				(nodet[modulox] + 3)->npackets = (nodet[modulox] + 3)->npackets + pktlenx;
     			}
     			else
     			(nodet[modulox] + 2)->npackets=(nodet[modulox] + 2)->npackets + pktlenx;
