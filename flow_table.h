@@ -49,7 +49,7 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox] + 0)->srcdst = hashx0;
     (nodet[modulox] + 0)->swsrcdstport = hashx1;
     (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-    (nodet[modulox] + 0)->npackets += pktlenx;
+    (nodet[modulox] + 0)->npackets = pktlenx;
     head = nodet[modulox] + 0 ;
     previousnode = head ;
 	tail = head;
@@ -68,7 +68,7 @@ if (PREDICT_FALSE(head == NULL)){
     previousnode = nodet[modulox] + 0;
     tail = nodet[modulox] + 0 ;
     (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-    (nodet[modulox] + 0)->npackets += pktlenx;
+    (nodet[modulox] + 0)->npackets = pktlenx;
     }
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
     {
@@ -78,7 +78,7 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox] + 1)->srcdst = hashx0;
     (nodet[modulox] + 1)->swsrcdstport = hashx1;
     (nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
-    (nodet[modulox] + 1)->npackets += pktlenx;
+    (nodet[modulox] + 1)->npackets = pktlenx;
         }
         else
         (nodet[modulox] + 0)->npackets += pktlenx;
@@ -92,7 +92,7 @@ if (PREDICT_FALSE(head == NULL)){
     			(nodet[modulox] + 2)->srcdst = hashx0;
     			(nodet[modulox] + 2)->swsrcdstport = hashx1;
     			(nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
-    			(nodet[modulox] + 2)->npackets += pktlenx;
+    			(nodet[modulox] + 2)->npackets = pktlenx;
     		}
     		else
     		(nodet[modulox] + 1)->npackets += pktlenx;
@@ -110,7 +110,7 @@ if (PREDICT_FALSE(head == NULL)){
     				(nodet[modulox] + 3)->swsrcdstport = hashx1;
     				(nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
     				(nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
-    				(nodet[modulox] + 3)->npackets += pktlenx;
+    				(nodet[modulox] + 3)->npackets = pktlenx;
     			}
     			else
     			(nodet[modulox] + 2)->npackets += pktlenx;
@@ -135,7 +135,7 @@ if (PREDICT_FALSE(head == NULL)){
 
     					((nodet[modulox] + 0)->update)->srcdst = hashx0;
     					((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
-    					((nodet[modulox] + 0)->update)->npackets += pktlenx;
+    					((nodet[modulox] + 0)->update)->npackets = pktlenx;
     					(nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
     				}
     				else
