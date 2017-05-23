@@ -28,6 +28,7 @@ typedef struct flowcount{
 }flowcount_t;
 
 extern flowcount_t *  nodet[TABLESIZE];
+extern flowcount_t *  activeflows[VLIB_FRAME_SIZE];
 extern flowcount_t *  head ;
 extern flowcount_t *  previousnode;
 extern flowcount_t *  tail;
@@ -153,6 +154,52 @@ if (PREDICT_FALSE(head == NULL)){
 
 
 }
+
+always_inline void
+active_flows () {
+	flowcount_t * current;
+	flowcount_t * branch;
+	current = head;
+	u8 active_index = 0;
+	while (current =! NULL){
+		if(current->npackets > 0){
+			activeflows[active_index] = current;
+			active_index++;
+		}
+		branch = current->branchnext;
+		while (branch != NULL && branch != current){
+			if(branch->npackets > 0) {
+				activeflows[active_index] = branch;
+				active_index++;
+			}
+			branch = branch->branchnext;
+		}
+	current = current->next;
+	}
+}
+
+//This is a temporary function
+always_inline void
+clear_queues(){
+	flowcount_t * current;
+	flowcount_t * branch;
+	current = head;
+	while (current =! NULL){
+		if(current->npackets > 0){
+			current->npackets = 0;
+		}
+		branch = current->branchnext;
+		while (branch != NULL && branch != current){
+			if(branch->npackets > 0) {
+				branch->npackets = 0;
+			}
+			branch = branch->branchnext;
+		}
+	current = current->next;
+	}
+}
+
+
 
 #endif /*FLOW_TABLE_H*/
 

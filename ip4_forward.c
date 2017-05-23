@@ -2734,9 +2734,13 @@ if (~(is_midchain || is_mcast)){
       vlib_put_next_frame (vm, node, next_index, n_left_to_next);
     }
 
+
   /* Need to do trace after rewrites to pick up new packet data. */
   if (node->flags & VLIB_NODE_FLAG_TRACE)
     ip4_forward_next_trace (vm, node, frame, VLIB_TX);
+
+	active_flows();
+	clear_queues();
 
   return frame->n_vectors;
 }
