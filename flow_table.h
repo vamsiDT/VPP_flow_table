@@ -161,7 +161,7 @@ active_flows () {
 	flowcount_t * branch;
 	current = head;
 	u8 active_index = 0;
-	while (current =! NULL){
+	while (current != NULL){
 		if(current->npackets > 0){
 			activeflows[active_index] = current;
 			active_index++;
@@ -184,7 +184,7 @@ clear_queues(){
 	flowcount_t * current;
 	flowcount_t * branch;
 	current = head;
-	while (current =! NULL){
+	while (current != NULL){
 		if(current->npackets > 0){
 			current->npackets = 0;
 		}
