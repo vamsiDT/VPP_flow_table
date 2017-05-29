@@ -26,12 +26,12 @@ $VPP_ROOT = /your/vpp/directory/ ;
 
     2.show flow number - To show the number of flows in the flow table.
 
-    3.clear flow counters - To clear the flow table.
+    3.show activeflow counters - To show the active flows in the previous vector which has been processed.
 
 #Description
 
     1.Currently the table size is 1024*4;    
-    
+
 #TODO
 
     1.Choose a good hash function for this application and update;
