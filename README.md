@@ -1,6 +1,6 @@
 # VPP_flow_table
-
-Modification within VPP src for flow classification and determining active flows
+VPP (Vector Packet Processor) is a high-speed packet processing engine which runs in user-space and implements kernel bypass techniques to achieve high-speed packet processing.
+This is a modification within VPP src for flow classification and determining active flows
 
 $VPP_ROOT = /your/vpp/directory/ ;
 
