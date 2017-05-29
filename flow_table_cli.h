@@ -12,7 +12,7 @@ show_flow_counters_fn (vlib_main_t * vm,
 	vlib_cli_output (vm, "Flow Counters ID\tInterface_TX\tSrc_ip\t\t\tDst_ip\t\tSrc_Port\t\tDst_Port\n");
     u32 count = 0;
     flowcount_t *  current;
-    current = tail;
+    current = head;
     flowcount_t * branch;
     u32 ifindex;
     u32 srcip;
@@ -33,46 +33,20 @@ show_flow_counters_fn (vlib_main_t * vm,
         vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
 
         branch = current->branchnext;
-    if (branch != NULL && count < numflows){
-        count++;
-        ifindex = (branch->swsrcdstport)>>32 ;
-        srcip = (u32)((branch->srcdst)>>32);
-        dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
-        srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
-        dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-        pktlen = branch->npackets;
-        
-        vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
-
-        branch = current->branchnext->branchnext;
-
-        if((branch != NULL && count < numflows)){
-            count++;
-            ifindex = (branch->swsrcdstport)>>32 ;
-        	srcip = (u32)((branch->srcdst)>>32);
-        	dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
-        	srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
-        	dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-        	pktlen = branch->npackets;
-        	
+        while(branch != NULL && branch != current){
+        	count++;
+        	ifindex = (branch->swsrcdstport)>>32 ;
+            srcip = (u32)((branch->srcdst)>>32);
+            dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
+            srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
+            dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
+            pktlen = branch->npackets;
             vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
-
-            branch = current->branchnext->branchnext->branchnext;
-
-            if((branch != NULL) && count < numflows){
-                count++;
-                ifindex = (branch->swsrcdstport)>>32 ;
-        		srcip = (u32)((branch->srcdst)>>32);
-        		dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
-        		srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
-        		dstport = (u16)((branch->swsrcdstport)&0x000000000000ffff) ;
-        		pktlen = branch->npackets;
-        		
-                vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",count,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
-                }
-            }
-        }
-        current = current->prev;
+            
+            branch = branch->branchnext;
+                    
+		}
+        current = current->next;
         }
 
         return error;
