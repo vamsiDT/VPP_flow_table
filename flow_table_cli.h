@@ -34,8 +34,8 @@ show_flow_counters_fn (vlib_main_t * vm,
 
         branch = current->branchnext;
         while(branch != NULL && branch != current){
-        	count++;
-        	ifindex = (branch->swsrcdstport)>>32 ;
+            count++;
+            ifindex = (branch->swsrcdstport)>>32 ;
             srcip = (u32)((branch->srcdst)>>32);
             dstip = (u32)((branch->srcdst)&0x00000000ffffffff) ;
             srcport = (u16)(((branch->swsrcdstport)&0x00000000ffffffff)>>16) ;
