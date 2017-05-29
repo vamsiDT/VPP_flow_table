@@ -190,7 +190,7 @@ show_activeflow_counters_fn (vlib_main_t * vm,
         dstip = (u32)((activeflows[i]->srcdst)&0x00000000ffffffff) ;
         srcport = (u16)(((activeflows[i]->swsrcdstport)&0x00000000ffffffff)>>16) ;
         dstport = (u16)((activeflows[i]->swsrcdstport)&0x000000000000ffff) ;
-        pktlen = activeflows[i]->npackets;activeflows[i]
+        pktlen = activeflows[i]->npackets;
         vlib_cli_output (vm, "%d\t\t%d\t\t\tSrc:%U\tDst:%U\tSrcPort:%u\t\tDstPort:%u\t\tSize:%d\n",i,(ifindex),format_ip4_address,&(srcip), format_ip4_address,&(dstip),clib_net_to_host_u16(srcport),clib_net_to_host_u16(dstport),pktlen);
         i++;
     }
