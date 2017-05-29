@@ -2739,8 +2739,8 @@ if (~(is_midchain || is_mcast)){
   if (node->flags & VLIB_NODE_FLAG_TRACE)
     ip4_forward_next_trace (vm, node, frame, VLIB_TX);
 
-	active_flows();
-	clear_queues();
+	
+	//clear_active_table();
 
   return frame->n_vectors;
 }
