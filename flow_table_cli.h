@@ -171,7 +171,14 @@ show_activeflow_counters_fn (vlib_main_t * vm,
     return error;
 }
 
-
+static clib_error_t *
+show_activeflow_number_fn (vlib_main_t * vm,
+                          unformat_input_t * input, vlib_cli_command_t * cmd)
+{
+    clib_error_t *error = 0;
+    vlib_cli_output (vm, "Number of Active Flows:%d\n",active_index);
+        return error;
+}
 
 /*****CLI commands*****/
 
@@ -192,6 +199,12 @@ VLIB_CLI_COMMAND (show_numberof_flows_command, static) = {
   .path = "show flow number",
   .short_help = "show flow number",
   .function = show_flow_number_fn,
+};
+
+VLIB_CLI_COMMAND (show_numberof_activeflows_command, static) = {
+  .path = "show activeflow number",
+  .short_help = "show activeflow number",
+  .function = show_activeflow_number_fn,
 };
 
 VLIB_CLI_COMMAND (clear_flowcounters_command, static) = {
