@@ -2334,7 +2334,7 @@ ip4_rewrite_inline (vlib_main_t * vm,
   n_left_from = frame->n_vectors;
   next_index = node->cached_next_index;
   u32 thread_index = vlib_get_thread_index ();
-  //clear_active_table();
+  clear_active_table();
 
   while (n_left_from > 0)
     {
