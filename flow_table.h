@@ -15,7 +15,7 @@
 #define FLOW_TABLE_H
 #define TABLESIZE 1024
 #define ALPHA 0.9	// ALPHA = Output/Input
-#define BETA 0.1	// ALPHA = Output/Input
+#define BETA 0.1	// BETA = Output/Input
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
@@ -29,22 +29,29 @@ typedef struct flowcount{
     struct flowcount * update;
 }flowcount_t;
 
+typedef struct activelist{
+	struct flowcount * flow;
+	u32 pkt_index;
+}activelist_t;
+
 extern flowcount_t *  nodet[TABLESIZE];
 extern flowcount_t *  activeflows[VLIB_FRAME_SIZE];
+extern activelist_t * pkt_flow[VLIB_FRAME_SIZE];
 extern flowcount_t *  head ;
 extern flowcount_t *  previousnode;
 extern flowcount_t *  tail;
 extern int numflows;
 extern int active_index;
-
+extern int pkt;
 
 /* Flow classification function */
 always_inline void
-flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx ){
+flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id ){
 
 if (PREDICT_FALSE(head == NULL)){
 	numflows = 0;
 	active_index = 0;
+	pkt = 0;
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
     (nodet[modulox] + 0)->branchnext = NULL;
     (nodet[modulox] + 1)->branchnext = NULL;
@@ -60,6 +67,9 @@ if (PREDICT_FALSE(head == NULL)){
 	tail = head;
 	activeflows[active_index] = nodet[modulox]+0;
 	active_index++;
+	pkt_flow[pkt]->pkt_index = pkt_id;
+	pkt_flow[pkt]->flow = nodet[modulox]+0;
+	pkt++;
     }
     else if ( (nodet[modulox] + 0) == NULL ){
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
@@ -78,6 +88,9 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox] + 0)->npackets = pktlenx;
     activeflows[active_index] = nodet[modulox]+0;
     active_index++;
+    pkt_flow[pkt]->pkt_index = pkt_id;
+	pkt_flow[pkt]->flow = nodet[modulox]+0;
+	pkt++;
     }
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
     {
@@ -90,6 +103,9 @@ if (PREDICT_FALSE(head == NULL)){
     		(nodet[modulox] + 1)->npackets = pktlenx;
     		activeflows[active_index] = nodet[modulox]+1;
     		active_index++;
+    		pkt_flow[pkt]->pkt_index = pkt_id;
+			pkt_flow[pkt]->flow = nodet[modulox]+1;
+			pkt++;
         }
         else
         {
@@ -99,6 +115,9 @@ if (PREDICT_FALSE(head == NULL)){
    				active_index++;
 			}
 			(nodet[modulox] + 0)->npackets += pktlenx;
+			pkt_flow[pkt]->pkt_index = pkt_id;
+			pkt_flow[pkt]->flow = nodet[modulox]+0;
+			pkt++;
     	}
     }
     else if ( (nodet[modulox] + 1)->branchnext == NULL )
@@ -113,6 +132,9 @@ if (PREDICT_FALSE(head == NULL)){
     			(nodet[modulox] + 2)->npackets = pktlenx;
     			activeflows[active_index] = nodet[modulox]+2;
     			active_index++;
+    			pkt_flow[pkt]->pkt_index = pkt_id;
+				pkt_flow[pkt]->flow = nodet[modulox]+2;
+				pkt++;
     		}
     		else
     		{
@@ -122,6 +144,9 @@ if (PREDICT_FALSE(head == NULL)){
     				active_index++;
 				}
 				(nodet[modulox] + 1)->npackets += pktlenx;
+				pkt_flow[pkt]->pkt_index = pkt_id;
+				pkt_flow[pkt]->flow = nodet[modulox]+1;
+				pkt++;
     		}
         }
         else
@@ -132,6 +157,9 @@ if (PREDICT_FALSE(head == NULL)){
    				active_index++;
 			}
 			(nodet[modulox] + 0)->npackets += pktlenx;
+			pkt_flow[pkt]->pkt_index = pkt_id;
+			pkt_flow[pkt]->flow = nodet[modulox]+0;
+			pkt++;
 		}     
      }
     else if ( (nodet[modulox] + 2)->branchnext == NULL ){
@@ -147,6 +175,9 @@ if (PREDICT_FALSE(head == NULL)){
     				(nodet[modulox] + 3)->npackets = pktlenx;
     				activeflows[active_index] = nodet[modulox]+3;
     				active_index++;
+    				pkt_flow[pkt]->pkt_index = pkt_id;
+					pkt_flow[pkt]->flow = nodet[modulox]+3;
+					pkt++;
     			}
     			else
     			{
@@ -156,6 +187,9 @@ if (PREDICT_FALSE(head == NULL)){
     					active_index++;
 					}
 					(nodet[modulox] + 2)->npackets += pktlenx;
+					pkt_flow[pkt]->pkt_index = pkt_id;
+					pkt_flow[pkt]->flow = nodet[modulox]+2;
+					pkt++;
     			}
         	}
         	else
@@ -166,6 +200,9 @@ if (PREDICT_FALSE(head == NULL)){
     				active_index++;
 				}
     			(nodet[modulox] + 1)->npackets += pktlenx;
+    			pkt_flow[pkt]->pkt_index = pkt_id;
+				pkt_flow[pkt]->flow = nodet[modulox]+1;
+				pkt++;
     		}
 		}
 		else
@@ -176,6 +213,9 @@ if (PREDICT_FALSE(head == NULL)){
     			active_index++;
 			}
 			(nodet[modulox] + 0)->npackets += pktlenx;
+			pkt_flow[pkt]->pkt_index = pkt_id;
+			pkt_flow[pkt]->flow = nodet[modulox]+0;
+			pkt++;
 		}
 	}
 
@@ -199,6 +239,9 @@ if (PREDICT_FALSE(head == NULL)){
     						active_index++;
     					}
     					((nodet[modulox] + 0)->update)->npackets = pktlenx;
+    					pkt_flow[pkt]->pkt_index = pkt_id;
+						pkt_flow[pkt]->flow = (nodet[modulox] + 0)->update;
+						pkt++;
     					(nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
     				}
     				else
@@ -209,6 +252,9 @@ if (PREDICT_FALSE(head == NULL)){
     						active_index++;
 						}
     					(nodet[modulox] + 3)->npackets += pktlenx;
+    					pkt_flow[pkt]->pkt_index = pkt_id;
+						pkt_flow[pkt]->flow = nodet[modulox]+3;
+						pkt++;
     				}
     			}
     			else
@@ -219,6 +265,9 @@ if (PREDICT_FALSE(head == NULL)){
     					active_index++;
 					}
     				(nodet[modulox] + 2)->npackets += pktlenx;
+    				pkt_flow[pkt]->pkt_index = pkt_id;
+					pkt_flow[pkt]->flow = nodet[modulox]+2;
+					pkt++;
     			}
     		}
     		else
@@ -229,6 +278,9 @@ if (PREDICT_FALSE(head == NULL)){
     				active_index++;
 				}
     			(nodet[modulox] + 1)->npackets += pktlenx;
+    			pkt_flow[pkt]->pkt_index = pkt_id;
+				pkt_flow[pkt]->flow = nodet[modulox]+1;
+				pkt++;
     		}
     	}
     	else
@@ -239,6 +291,9 @@ if (PREDICT_FALSE(head == NULL)){
     			active_index++;
 			}
     		(nodet[modulox] + 0)->npackets += pktlenx;
+    		pkt_flow[pkt]->pkt_index = pkt_id;
+			pkt_flow[pkt]->flow = nodet[modulox]+0;
+			pkt++;
     	}
     }
 }

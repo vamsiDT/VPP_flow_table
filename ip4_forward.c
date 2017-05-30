@@ -2334,6 +2334,7 @@ ip4_rewrite_inline (vlib_main_t * vm,
   n_left_from = frame->n_vectors;
   next_index = node->cached_next_index;
   u32 thread_index = vlib_get_thread_index ();
+  //clear_active_table();
 
   while (n_left_from > 0)
     {
@@ -2397,8 +2398,10 @@ ip4_rewrite_inline (vlib_main_t * vm,
 
 	  ip0 = vlib_buffer_get_current (p0);
 	  ip1 = vlib_buffer_get_current (p1);
+//////////////start of extra code///////////////
 	udp0 = (udp_header_t *) (ip0+1);
 	udp1 = (udp_header_t *) (ip1+1);
+//////////////end of extra code///////////////
 
 	  error0 = error1 = IP4_ERROR_NONE;
 	  next0 = next1 = IP4_REWRITE_NEXT_DROP;
@@ -2544,9 +2547,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
 	pktlen0 = p0->current_length;
 	pktlen1 = p1->current_length;
-	flow_table_classify(modulo0,hash00,hash01,pktlen0);
-	flow_table_classify(modulo1,hash10,hash11,pktlen1);
-	
+	flow_table_classify(modulo0,hash00,hash01,pktlen0,pi0);
+	flow_table_classify(modulo1,hash10,hash11,pktlen1,pi1);
 }
 ////////////end of extra code//////////////
 
@@ -2722,8 +2724,7 @@ if (~(is_midchain || is_mcast)){
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	pktlen0 = p0->current_length;
-	flow_table_classify(modulo0,hash00,hash01,pktlen0);
-
+	flow_table_classify(modulo0,hash00,hash01,pktlen0,pi0);
 }
 ///////////////end of extra code///////////
 	  vlib_validate_buffer_enqueue_x1 (vm, node, next_index,
@@ -2739,7 +2740,7 @@ if (~(is_midchain || is_mcast)){
   if (node->flags & VLIB_NODE_FLAG_TRACE)
     ip4_forward_next_trace (vm, node, frame, VLIB_TX);
 
-	
+	pkt = 0;
 	//clear_active_table();
 
   return frame->n_vectors;
