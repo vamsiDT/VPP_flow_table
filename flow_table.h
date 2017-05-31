@@ -1,7 +1,7 @@
 /*
-*	Flow classification in VPP
+*   Flow classification in VPP
 *
-*	      flow_table.h
+*         flow_table.h
 *
 *
 */
@@ -14,24 +14,24 @@
 #ifndef FLOW_TABLE_H
 #define FLOW_TABLE_H
 #define TABLESIZE 1024
-#define ALPHA 0.9	// ALPHA = Output/Input
-#define BETA 0.1	// BETA = Output/Input
+#define ALPHA 0.9   // ALPHA = Output/Input
+#define BETA 0.1    // BETA = Output/Input
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
-	struct flowcount * prev;
-	u64 srcdst;
-	u64 swsrcdstport;
-	int npackets;
-	int vqueue;
-	struct flowcount * branchnext;
+    struct flowcount * prev;
+    u64 srcdst;
+    u64 swsrcdstport;
+    int npackets;
+    int vqueue;
+    struct flowcount * branchnext;
     struct flowcount * next;
     struct flowcount * update;
 }flowcount_t;
 
 typedef struct activelist{
-	struct flowcount * flow;
-	u32 pkt_index;
+    struct flowcount * flow;
+    u32 pkt_index;
 }activelist_t;
 
 extern flowcount_t *  nodet[TABLESIZE];
@@ -49,9 +49,9 @@ always_inline void
 flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id ){
 
 if (PREDICT_FALSE(head == NULL)){
-	numflows = 0;
-	active_index = 0;
-	pkt = 0;
+    numflows = 0;
+    active_index = 0;
+    pkt = 0;
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
     pkt_flow = malloc(VLIB_FRAME_SIZE*sizeof(activelist_t));
     (nodet[modulox] + 0)->branchnext = NULL;
@@ -65,12 +65,12 @@ if (PREDICT_FALSE(head == NULL)){
     (nodet[modulox] + 0)->npackets = pktlenx;
     head = nodet[modulox] + 0 ;
     previousnode = head ;
-	tail = head;
-	activeflows[active_index] = nodet[modulox]+0;
-	active_index++;
-	(pkt_flow+pkt)->pkt_index = pkt_id;
-	(pkt_flow+pkt)->flow = nodet[modulox]+0;
-	pkt++;
+    tail = head;
+    activeflows[active_index] = nodet[modulox]+0;
+    active_index++;
+    (pkt_flow+pkt)->pkt_index = pkt_id;
+    (pkt_flow+pkt)->flow = nodet[modulox]+0;
+    pkt++;
     }
     else if ( (nodet[modulox] + 0) == NULL ){
     nodet[modulox] = malloc(4*sizeof(flowcount_t));
@@ -90,237 +90,237 @@ if (PREDICT_FALSE(head == NULL)){
     activeflows[active_index] = nodet[modulox]+0;
     active_index++;
     (pkt_flow+pkt)->pkt_index = pkt_id;
-	(pkt_flow+pkt)->flow = nodet[modulox]+0;
-	pkt++;
+    (pkt_flow+pkt)->flow = nodet[modulox]+0;
+    pkt++;
     }
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
     {
         if  ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) 
         {
-    		numflows++;
-    		(nodet[modulox] + 1)->srcdst = hashx0;
-    		(nodet[modulox] + 1)->swsrcdstport = hashx1;
-    		(nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
-    		(nodet[modulox] + 1)->npackets = pktlenx;
-    		activeflows[active_index] = nodet[modulox]+1;
-    		active_index++;
-    		(pkt_flow+pkt)->pkt_index = pkt_id;
-			(pkt_flow+pkt)->flow = nodet[modulox]+1;
-			pkt++;
+            numflows++;
+            (nodet[modulox] + 1)->srcdst = hashx0;
+            (nodet[modulox] + 1)->swsrcdstport = hashx1;
+            (nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
+            (nodet[modulox] + 1)->npackets = pktlenx;
+            activeflows[active_index] = nodet[modulox]+1;
+            active_index++;
+            (pkt_flow+pkt)->pkt_index = pkt_id;
+            (pkt_flow+pkt)->flow = nodet[modulox]+1;
+            pkt++;
         }
         else
         {
-    		if ((nodet[modulox] + 0)->npackets <= 0)
-    		{
-    			activeflows[active_index] = nodet[modulox]+0;
-   				active_index++;
-			}
-			(nodet[modulox] + 0)->npackets += pktlenx;
-			(pkt_flow+pkt)->pkt_index = pkt_id;
-			(pkt_flow+pkt)->flow = nodet[modulox]+0;
-			pkt++;
-    	}
+            if ((nodet[modulox] + 0)->npackets <= 0)
+            {
+                activeflows[active_index] = nodet[modulox]+0;
+                active_index++;
+            }
+            (nodet[modulox] + 0)->npackets += pktlenx;
+            (pkt_flow+pkt)->pkt_index = pkt_id;
+            (pkt_flow+pkt)->flow = nodet[modulox]+0;
+            pkt++;
+        }
     }
     else if ( (nodet[modulox] + 1)->branchnext == NULL )
     {
         if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
-    		if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
-    			
-    			numflows++;
-    			(nodet[modulox] + 2)->srcdst = hashx0;
-    			(nodet[modulox] + 2)->swsrcdstport = hashx1;
-    			(nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
-    			(nodet[modulox] + 2)->npackets = pktlenx;
-    			activeflows[active_index] = nodet[modulox]+2;
-    			active_index++;
-    			(pkt_flow+pkt)->pkt_index = pkt_id;
-				(pkt_flow+pkt)->flow = nodet[modulox]+2;
-				pkt++;
-    		}
-    		else
-    		{
-    			if ((nodet[modulox] + 1)->npackets <= 0)
-    			{
-    				activeflows[active_index] = nodet[modulox]+1;
-    				active_index++;
-				}
-				(nodet[modulox] + 1)->npackets += pktlenx;
-				(pkt_flow+pkt)->pkt_index = pkt_id;
-				(pkt_flow+pkt)->flow = nodet[modulox]+1;
-				pkt++;
-    		}
+            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
+                
+                numflows++;
+                (nodet[modulox] + 2)->srcdst = hashx0;
+                (nodet[modulox] + 2)->swsrcdstport = hashx1;
+                (nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
+                (nodet[modulox] + 2)->npackets = pktlenx;
+                activeflows[active_index] = nodet[modulox]+2;
+                active_index++;
+                (pkt_flow+pkt)->pkt_index = pkt_id;
+                (pkt_flow+pkt)->flow = nodet[modulox]+2;
+                pkt++;
+            }
+            else
+            {
+                if ((nodet[modulox] + 1)->npackets <= 0)
+                {
+                    activeflows[active_index] = nodet[modulox]+1;
+                    active_index++;
+                }
+                (nodet[modulox] + 1)->npackets += pktlenx;
+                (pkt_flow+pkt)->pkt_index = pkt_id;
+                (pkt_flow+pkt)->flow = nodet[modulox]+1;
+                pkt++;
+            }
         }
         else
         {
-        	if ((nodet[modulox] + 0)->npackets <= 0)
-    		{
-    			activeflows[active_index] = nodet[modulox]+0;
-   				active_index++;
-			}
-			(nodet[modulox] + 0)->npackets += pktlenx;
-			(pkt_flow+pkt)->pkt_index = pkt_id;
-			(pkt_flow+pkt)->flow = nodet[modulox]+0;
-			pkt++;
-		}     
+            if ((nodet[modulox] + 0)->npackets <= 0)
+            {
+                activeflows[active_index] = nodet[modulox]+0;
+                active_index++;
+            }
+            (nodet[modulox] + 0)->npackets += pktlenx;
+            (pkt_flow+pkt)->pkt_index = pkt_id;
+            (pkt_flow+pkt)->flow = nodet[modulox]+0;
+            pkt++;
+        }     
      }
     else if ( (nodet[modulox] + 2)->branchnext == NULL ){
         if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
-    		if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
-    			if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
-    				
-    				numflows++;
-    				(nodet[modulox] + 3)->srcdst = hashx0;
-    				(nodet[modulox] + 3)->swsrcdstport = hashx1;
-    				(nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
-    				(nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
-    				(nodet[modulox] + 3)->npackets = pktlenx;
-    				activeflows[active_index] = nodet[modulox]+3;
-    				active_index++;
-    				(pkt_flow+pkt)->pkt_index = pkt_id;
-					(pkt_flow+pkt)->flow = nodet[modulox]+3;
-					pkt++;
-    			}
-    			else
-    			{
-    				if ((nodet[modulox] + 2)->npackets <= 0)
-    				{
-    					activeflows[active_index] = nodet[modulox]+2;
-    					active_index++;
-					}
-					(nodet[modulox] + 2)->npackets += pktlenx;
-					(pkt_flow+pkt)->pkt_index = pkt_id;
-					(pkt_flow+pkt)->flow = nodet[modulox]+2;
-					pkt++;
-    			}
-        	}
-        	else
-    		{
-    			if ((nodet[modulox] + 1)->npackets <= 0)
-    			{
-    				activeflows[active_index] = nodet[modulox]+1;
-    				active_index++;
-				}
-    			(nodet[modulox] + 1)->npackets += pktlenx;
-    			(pkt_flow+pkt)->pkt_index = pkt_id;
-				(pkt_flow+pkt)->flow = nodet[modulox]+1;
-				pkt++;
-    		}
-		}
-		else
-		{
-			if ((nodet[modulox] + 0)->npackets <= 0)
-    		{
-    			activeflows[active_index] = nodet[modulox]+0;
-    			active_index++;
-			}
-			(nodet[modulox] + 0)->npackets += pktlenx;
-			(pkt_flow+pkt)->pkt_index = pkt_id;
-			(pkt_flow+pkt)->flow = nodet[modulox]+0;
-			pkt++;
-		}
-	}
+            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
+                if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
+                    
+                    numflows++;
+                    (nodet[modulox] + 3)->srcdst = hashx0;
+                    (nodet[modulox] + 3)->swsrcdstport = hashx1;
+                    (nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
+                    (nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
+                    (nodet[modulox] + 3)->npackets = pktlenx;
+                    activeflows[active_index] = nodet[modulox]+3;
+                    active_index++;
+                    (pkt_flow+pkt)->pkt_index = pkt_id;
+                    (pkt_flow+pkt)->flow = nodet[modulox]+3;
+                    pkt++;
+                }
+                else
+                {
+                    if ((nodet[modulox] + 2)->npackets <= 0)
+                    {
+                        activeflows[active_index] = nodet[modulox]+2;
+                        active_index++;
+                    }
+                    (nodet[modulox] + 2)->npackets += pktlenx;
+                    (pkt_flow+pkt)->pkt_index = pkt_id;
+                    (pkt_flow+pkt)->flow = nodet[modulox]+2;
+                    pkt++;
+                }
+            }
+            else
+            {
+                if ((nodet[modulox] + 1)->npackets <= 0)
+                {
+                    activeflows[active_index] = nodet[modulox]+1;
+                    active_index++;
+                }
+                (nodet[modulox] + 1)->npackets += pktlenx;
+                (pkt_flow+pkt)->pkt_index = pkt_id;
+                (pkt_flow+pkt)->flow = nodet[modulox]+1;
+                pkt++;
+            }
+        }
+        else
+        {
+            if ((nodet[modulox] + 0)->npackets <= 0)
+            {
+                activeflows[active_index] = nodet[modulox]+0;
+                active_index++;
+            }
+            (nodet[modulox] + 0)->npackets += pktlenx;
+            (pkt_flow+pkt)->pkt_index = pkt_id;
+            (pkt_flow+pkt)->flow = nodet[modulox]+0;
+            pkt++;
+        }
+    }
 
 
     else
     {
-    	if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
+        if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
 
-    		if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
+            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
 
-    			if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
+                if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
 
-    				if ( ((nodet[modulox] + 3)->srcdst != hashx0) || ((nodet[modulox] + 3)->swsrcdstport != hashx1) ) {
+                    if ( ((nodet[modulox] + 3)->srcdst != hashx0) || ((nodet[modulox] + 3)->swsrcdstport != hashx1) ) {
 
-    					((nodet[modulox] + 0)->update)->srcdst = hashx0;
-    					((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
-    					
-    					if (((nodet[modulox] + 0)->update)->npackets <= 0)
-    					{
-    						activeflows[active_index] = ((nodet[modulox] + 0)->update);
-    						active_index++;
-    					}
-    					((nodet[modulox] + 0)->update)->npackets = pktlenx;
-    					(pkt_flow+pkt)->pkt_index = pkt_id;
-						(pkt_flow+pkt)->flow = (nodet[modulox] + 0)->update;
-						pkt++;
-    					(nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
-    				}
-    				else
-    				{
-    					if ((nodet[modulox] + 3)->npackets <= 0)
-    					{
-    						activeflows[active_index] = nodet[modulox]+3;
-    						active_index++;
-						}
-    					(nodet[modulox] + 3)->npackets += pktlenx;
-    					(pkt_flow+pkt)->pkt_index = pkt_id;
-						(pkt_flow+pkt)->flow = nodet[modulox]+3;
-						pkt++;
-    				}
-    			}
-    			else
-    			{
-    				if ((nodet[modulox] + 2)->npackets <= 0)
-    				{
-    					activeflows[active_index] = nodet[modulox]+2;
-    					active_index++;
-					}
-    				(nodet[modulox] + 2)->npackets += pktlenx;
-    				(pkt_flow+pkt)->pkt_index = pkt_id;
-					(pkt_flow+pkt)->flow = nodet[modulox]+2;
-					pkt++;
-    			}
-    		}
-    		else
-    		{
-    			if ((nodet[modulox] + 1)->npackets <= 0)
-    			{
-    				activeflows[active_index] = nodet[modulox]+1;
-    				active_index++;
-				}
-    			(nodet[modulox] + 1)->npackets += pktlenx;
-    			(pkt_flow+pkt)->pkt_index = pkt_id;
-				(pkt_flow+pkt)->flow = nodet[modulox]+1;
-				pkt++;
-    		}
-    	}
-    	else
-    	{
-    		if ((nodet[modulox] + 0)->npackets <= 0)
-    		{
-    			activeflows[active_index] = nodet[modulox]+0;
-    			active_index++;
-			}
-    		(nodet[modulox] + 0)->npackets += pktlenx;
-    		(pkt_flow+pkt)->pkt_index = pkt_id;
-			(pkt_flow+pkt)->flow = nodet[modulox]+0;
-			pkt++;
-    	}
+                        ((nodet[modulox] + 0)->update)->srcdst = hashx0;
+                        ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
+                        
+                        if (((nodet[modulox] + 0)->update)->npackets <= 0)
+                        {
+                            activeflows[active_index] = ((nodet[modulox] + 0)->update);
+                            active_index++;
+                        }
+                        ((nodet[modulox] + 0)->update)->npackets = pktlenx;
+                        (pkt_flow+pkt)->pkt_index = pkt_id;
+                        (pkt_flow+pkt)->flow = (nodet[modulox] + 0)->update;
+                        pkt++;
+                        (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
+                    }
+                    else
+                    {
+                        if ((nodet[modulox] + 3)->npackets <= 0)
+                        {
+                            activeflows[active_index] = nodet[modulox]+3;
+                            active_index++;
+                        }
+                        (nodet[modulox] + 3)->npackets += pktlenx;
+                        (pkt_flow+pkt)->pkt_index = pkt_id;
+                        (pkt_flow+pkt)->flow = nodet[modulox]+3;
+                        pkt++;
+                    }
+                }
+                else
+                {
+                    if ((nodet[modulox] + 2)->npackets <= 0)
+                    {
+                        activeflows[active_index] = nodet[modulox]+2;
+                        active_index++;
+                    }
+                    (nodet[modulox] + 2)->npackets += pktlenx;
+                    (pkt_flow+pkt)->pkt_index = pkt_id;
+                    (pkt_flow+pkt)->flow = nodet[modulox]+2;
+                    pkt++;
+                }
+            }
+            else
+            {
+                if ((nodet[modulox] + 1)->npackets <= 0)
+                {
+                    activeflows[active_index] = nodet[modulox]+1;
+                    active_index++;
+                }
+                (nodet[modulox] + 1)->npackets += pktlenx;
+                (pkt_flow+pkt)->pkt_index = pkt_id;
+                (pkt_flow+pkt)->flow = nodet[modulox]+1;
+                pkt++;
+            }
+        }
+        else
+        {
+            if ((nodet[modulox] + 0)->npackets <= 0)
+            {
+                activeflows[active_index] = nodet[modulox]+0;
+                active_index++;
+            }
+            (nodet[modulox] + 0)->npackets += pktlenx;
+            (pkt_flow+pkt)->pkt_index = pkt_id;
+            (pkt_flow+pkt)->flow = nodet[modulox]+0;
+            pkt++;
+        }
     }
 }
 
 /*
 always_inline void
 active_flows () {
-	flowcount_t * current;
-	flowcount_t * branch;
-	current = head;
-	u8 active_index = 0;
-	while (current != NULL){
-		if(current->npackets > 0){
-			activeflows[active_index] = current;
-			active_index++;
-		}
-		branch = current->branchnext;
-		while (branch != NULL && branch != current){
-			if(branch->npackets > 0) {
-				activeflows[active_index] = branch;
-				active_index++;
-			}
-			branch = branch->branchnext;
-		}
-	current = current->next;
-	}
+    flowcount_t * current;
+    flowcount_t * branch;
+    current = head;
+    u8 active_index = 0;
+    while (current != NULL){
+        if(current->npackets > 0){
+            activeflows[active_index] = current;
+            active_index++;
+        }
+        branch = current->branchnext;
+        while (branch != NULL && branch != current){
+            if(branch->npackets > 0) {
+                activeflows[active_index] = branch;
+                active_index++;
+            }
+            branch = branch->branchnext;
+        }
+    current = current->next;
+    }
 }
 */
 /*
@@ -328,43 +328,43 @@ active_flows () {
 always_inline void
 clear_queues()
 {
-	flowcount_t * current;
-	flowcount_t * branch;
-	current = head;
-	while (current != NULL){
-		if(current->npackets > 0){
-			current->npackets = 0;
-		}
-		branch = current->branchnext;
-		while (branch != NULL && branch != current){
-			if(branch->npackets > 0) {
-				branch->npackets = 0;
-			}
-			branch = branch->branchnext;
-		}
-	current = current->next;
-	}
+    flowcount_t * current;
+    flowcount_t * branch;
+    current = head;
+    while (current != NULL){
+        if(current->npackets > 0){
+            current->npackets = 0;
+        }
+        branch = current->branchnext;
+        while (branch != NULL && branch != current){
+            if(branch->npackets > 0) {
+                branch->npackets = 0;
+            }
+            branch = branch->branchnext;
+        }
+    current = current->next;
+    }
 }
 */
 always_inline void
 clear_active_table ()
 {
-	int i = 0;
-	while (activeflows[i] != NULL && i < VLIB_FRAME_SIZE)
-	{
-		(activeflows[i])->npackets = 0;
-		activeflows[i]=NULL;
-		i++;
-	}
-	active_index = 0;
+    int i = 0;
+    while (activeflows[i] != NULL && i < VLIB_FRAME_SIZE)
+    {
+        (activeflows[i])->npackets = 0;
+        activeflows[i]=NULL;
+        i++;
+    }
+    active_index = 0;
 }
 
 #endif /*FLOW_TABLE_H*/
 
 /*
-*	"Gather ye rosebuds while ye may"
-*				   - Mike Portnoy
+*   "Gather ye rosebuds while ye may"
+*                  - Mike Portnoy
 *
-*	End
+*   End
 *
 */
