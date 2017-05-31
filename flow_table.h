@@ -363,7 +363,7 @@ clear_active_table ()
 
 /*
 *	"Gather ye rosebuds while ye may"
-*				- Mike Portnoy
+*				   - Mike Portnoy
 *
 *	End
 *
