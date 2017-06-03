@@ -21,6 +21,7 @@ show_flow_counters_fn (vlib_main_t * vm,
     u32 dstport;
     int pktlen;
 
+	
    while (current != NULL && count < numflows){
         count++;
         ifindex = (current->swsrcdstport)>>32 ;
