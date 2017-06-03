@@ -60,7 +60,6 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
         (nodet[modulox] + 0)->srcdst = hashx0;
         (nodet[modulox] + 0)->swsrcdstport = hashx1;
         (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-        //(nodet[modulox] + 0)->vqueue = pktlenx;
         head = nodet[modulox] + 0 ;
         flow = nodet[modulox] + 0;
     }
@@ -76,7 +75,6 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
         (nodet[modulox] + 0)->swsrcdstport = hashx1;
         (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
         flow = nodet[modulox] + 0;
-        //(nodet[modulox] + 0)->vqueue = pktlenx;
     }
 
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
@@ -88,16 +86,9 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
             (nodet[modulox] + 1)->swsrcdstport = hashx1;
             (nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
             flow = nodet[modulox] + 1;
-            //(nodet[modulox] + 1)->vqueue = pktlenx;
         }
         else
-        {/*
-            if ((nodet[modulox] + 0)->vqueue <= 0)
-            {
-                activeflows[active_index] = nodet[modulox]+0;
-                active_index++;
-            }
-            (nodet[modulox] + 0)->vqueue += pktlenx; */
+        {
             flow = nodet[modulox] + 0;
         }
     }
@@ -112,27 +103,14 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
                 (nodet[modulox] + 2)->swsrcdstport = hashx1;
                 (nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
                 flow = nodet[modulox] + 2;
-                //(nodet[modulox] + 2)->vqueue = pktlenx;
             }
             else
-            {/*
-                if ((nodet[modulox] + 1)->vqueue <= 0)
-                {
-                    activeflows[active_index] = nodet[modulox]+1;
-                    active_index++;
-                }
-                (nodet[modulox] + 1)->vqueue += pktlenx; */
+            {
                 flow = nodet[modulox] + 1;
             }
         }
         else
-        {/*
-            if ((nodet[modulox] + 0)->vqueue <= 0)
-            {
-                activeflows[active_index] = nodet[modulox]+0;
-                active_index++;
-            }
-            (nodet[modulox] + 0)->vqueue += pktlenx; */
+        {
             flow = nodet[modulox] + 0;
         }     
     }
@@ -148,38 +126,19 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
                     (nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
                     (nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
                     flow = nodet[modulox] + 3;
-                    //(nodet[modulox] + 3)->vqueue = pktlenx;
                 }
                 else
-                {/*
-                    if ((nodet[modulox] + 2)->vqueue <= 0)
-                    {
-                        activeflows[active_index] = nodet[modulox]+2;
-                        active_index++;
-                    }
-                    (nodet[modulox] + 2)->vqueue += pktlenx; */
+                {
                     flow = nodet[modulox] + 2;
                 }
             }
             else
-            {/*
-                if ((nodet[modulox] + 1)->vqueue <= 0)
-                {
-                    activeflows[active_index] = nodet[modulox]+1;
-                    active_index++;
-                }
-                (nodet[modulox] + 1)->vqueue += pktlenx; */
+            {
                 flow = nodet[modulox] + 1;
             }
         }
         else
-        {/*
-            if ((nodet[modulox] + 0)->vqueue <= 0)
-            {
-                activeflows[active_index] = nodet[modulox]+0;
-                active_index++;
-            }
-            (nodet[modulox] + 0)->vqueue += pktlenx; */
+        {
             flow = nodet[modulox] + 0;
         }
     }
@@ -197,56 +156,25 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
                         ((nodet[modulox] + 0)->update)->srcdst = hashx0;
                         ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
                         flow = (nodet[modulox] + 0)->update;
-                        /*
-                        if (((nodet[modulox] + 0)->update)->vqueue <= 0)
-                        {
-                            activeflows[active_index] = ((nodet[modulox] + 0)->update);
-                            active_index++;
-                        }
-                        ((nodet[modulox] + 0)->update)->vqueue = pktlenx; */
                         (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
                     }
                     else
-                    {/*
-                        if ((nodet[modulox] + 3)->vqueue <= 0)
-                        {
-                            activeflows[active_index] = nodet[modulox]+3;
-                            active_index++;
-                        }
-                        (nodet[modulox] + 3)->vqueue += pktlenx; */
+                    {
                         flow = nodet[modulox] + 3;
                     }
                 }
                 else
-                {/*
-                    if ((nodet[modulox] + 2)->vqueue <= 0)
-                    {
-                        activeflows[active_index] = nodet[modulox]+2;
-                        active_index++;
-                    }
-                    (nodet[modulox] + 2)->vqueue += pktlenx; */
+                {
                     flow = nodet[modulox] + 2;
                 }
             }
             else
-            {/*
-                if ((nodet[modulox] + 1)->vqueue <= 0)
-                {
-                    activeflows[active_index] = nodet[modulox]+1;
-                    active_index++;
-                }
-                (nodet[modulox] + 1)->vqueue += pktlenx; */
+            {
                 flow = nodet[modulox] + 1;
             }
         }
         else
-        {/*
-            if ((nodet[modulox] + 0)->vqueue <= 0)
-            {
-                activeflows[active_index] = nodet[modulox]+0;
-                active_index++;
-            }
-            (nodet[modulox] + 0)->vqueue += pktlenx; */
+        {
             flow = nodet[modulox] + 0;
         }
     }
@@ -254,6 +182,7 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
     return flow;
 }
 
+/* arrival function for each packet */
 always_inline void arrival(flowcount_t * flow, u16 pktlenx){
 
     if(flow->vqueue <= THRESHOLD && r_qtotal < BUFFER){
@@ -266,6 +195,7 @@ always_inline void arrival(flowcount_t * flow, u16 pktlenx){
     }
 }
 
+/* vstate algorithm */
 always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     flowcount_t * j;
     u32 served,credit;
@@ -274,7 +204,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     credit = capacity /*This is just a temporary variable. Determine the capacity to be shared*/;
     while (oldnbl>nbl && nbl > 0){
         i=1;
-        served = credit/nbl; //write a code to determine nbl;
+        served = credit/nbl;
         credit = 0;
         for (int k=0;k<oldnbl;k++){
             j = flowout();
@@ -299,6 +229,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     }
 }
 
+/* function to insert the flow in blacklogged flows list. The flow is inserted at the end of the list i.e tail.*/
 void flowin(flowcount_t * flow){
     activelist_t * temp;
     temp = malloc(sizeof(activelist_t));
@@ -314,71 +245,13 @@ void flowin(flowcount_t * flow){
     }
 }
 
+/* function to extract the flow from the blacklogged flows list. The flow is taken from the head of the list. */
 flowcount_t * flowout(){
     flowcount_t * temp;
     temp = head_af->flow;
     free(head_af);
     head_af = head_af->next;
     return temp;
-}
-/*
-always_inline void
-active_flows () {
-    flowcount_t * current;
-    flowcount_t * branch;
-    current = head;
-    u8 active_index = 0;
-    while (current != NULL){
-        if(current->vqueue > 0){
-            activeflows[active_index] = current;
-            active_index++;
-        }
-        branch = current->branchnext;
-        while (branch != NULL && branch != current){
-            if(branch->vqueue > 0) {
-                activeflows[active_index] = branch;
-                active_index++;
-            }
-            branch = branch->branchnext;
-        }
-    current = current->next;
-    }
-}
-*/
-/*
-//This is a temporary function
-always_inline void
-clear_queues()
-{
-    flowcount_t * current;
-    flowcount_t * branch;
-    current = head;
-    while (current != NULL){
-        if(current->vqueue > 0){
-            current->vqueue = 0;
-        }
-        branch = current->branchnext;
-        while (branch != NULL && branch != current){
-            if(branch->vqueue > 0) {
-                branch->vqueue = 0;
-            }
-            branch = branch->branchnext;
-        }
-    current = current->next;
-    }
-}
-*/
-always_inline void
-clear_active_table ()
-{
-    int i = 0;
-    while (activeflows[i] != NULL && i < VLIB_FRAME_SIZE)
-    {
-        (activeflows[i])->vqueue = 0;
-        activeflows[i]=NULL;
-        i++;
-    }
-    active_index = 0;
 }
 
 #endif /*FLOW_TABLE_H*/
