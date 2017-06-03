@@ -16,83 +16,69 @@
 #define TABLESIZE 1024
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
+#define BUFFER 137000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
+#define THRESHOLD 100000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
-    struct flowcount * prev;
     u64 srcdst;
     u64 swsrcdstport;
-    int npackets;
     int vqueue;
     struct flowcount * branchnext;
-    struct flowcount * next;
     struct flowcount * update;
 }flowcount_t;
 
 typedef struct activelist{
     struct flowcount * flow;
-    u32 pkt_index;
+    struct activelist * next;
 }activelist_t;
 
 extern flowcount_t *  nodet[TABLESIZE];
-extern flowcount_t *  activeflows[VLIB_FRAME_SIZE];
-extern activelist_t * pkt_flow;
+extern activelist_t * head_af,tail_af;
 extern flowcount_t *  head ;
-extern flowcount_t *  previousnode;
-extern flowcount_t *  tail;
 extern int numflows;
-extern int active_index;
-extern int pkt;
+extern u32 r_qtotal;
+extern u32 nbl;
 
 /* Flow classification function */
-always_inline void
+always_inline flowcount_t *
 flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id ){
 
-if (PREDICT_FALSE(head == NULL)){
-    numflows = 0;
-    active_index = 0;
-    pkt = 0;
-    nodet[modulox] = malloc(4*sizeof(flowcount_t));
-    pkt_flow = malloc(VLIB_FRAME_SIZE*sizeof(activelist_t));
-    (nodet[modulox] + 0)->branchnext = NULL;
-    (nodet[modulox] + 1)->branchnext = NULL;
-    (nodet[modulox] + 2)->branchnext = NULL;
-    (nodet[modulox] + 3)->branchnext = NULL;
-    numflows++;
-    (nodet[modulox] + 0)->srcdst = hashx0;
-    (nodet[modulox] + 0)->swsrcdstport = hashx1;
-    (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-    (nodet[modulox] + 0)->npackets = pktlenx;
-    head = nodet[modulox] + 0 ;
-    previousnode = head ;
-    tail = head;
-    activeflows[active_index] = nodet[modulox]+0;
-    active_index++;
-    (pkt_flow+pkt)->pkt_index = pkt_id;
-    (pkt_flow+pkt)->flow = nodet[modulox]+0;
-    pkt++;
+    flowcount_t * flow;
+
+    if (PREDICT_FALSE(head == NULL)){
+        numflows = 0;
+        nbl = 0;
+        nodet[modulox] = malloc(4*sizeof(flowcount_t));
+        (nodet[modulox] + 0)->branchnext = NULL;
+        (nodet[modulox] + 1)->branchnext = NULL;
+        (nodet[modulox] + 2)->branchnext = NULL;
+        (nodet[modulox] + 3)->branchnext = NULL;
+        head_af = malloc(sizeof(activelist_t));
+        tail_af = malloc(sizeof(activelist_t));
+        numflows++;
+        (nodet[modulox] + 0)->srcdst = hashx0;
+        (nodet[modulox] + 0)->swsrcdstport = hashx1;
+        (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
+        //(nodet[modulox] + 0)->vqueue = pktlenx;
+        head = nodet[modulox] + 0 ;
+        flow = nodet[modulox] + 0;
     }
+
     else if ( (nodet[modulox] + 0) == NULL ){
-    nodet[modulox] = malloc(4*sizeof(flowcount_t));
-    (nodet[modulox] + 0)->branchnext = NULL;
-    (nodet[modulox] + 1)->branchnext = NULL;
-    (nodet[modulox] + 2)->branchnext = NULL;
-    (nodet[modulox] + 3)->branchnext = NULL;
-    numflows++;
-    (nodet[modulox] + 0)->srcdst = hashx0;
-    (nodet[modulox] + 0)->swsrcdstport = hashx1;
-    (nodet[modulox] + 0)->prev = previousnode;
-    previousnode->next = nodet[modulox] + 0;
-    previousnode = nodet[modulox] + 0;
-    tail = nodet[modulox] + 0 ;
-    (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-    (nodet[modulox] + 0)->npackets = pktlenx;
-    activeflows[active_index] = nodet[modulox]+0;
-    active_index++;
-    (pkt_flow+pkt)->pkt_index = pkt_id;
-    (pkt_flow+pkt)->flow = nodet[modulox]+0;
-    pkt++;
+        nodet[modulox] = malloc(4*sizeof(flowcount_t));
+        (nodet[modulox] + 0)->branchnext = NULL;
+        (nodet[modulox] + 1)->branchnext = NULL;
+        (nodet[modulox] + 2)->branchnext = NULL;
+        (nodet[modulox] + 3)->branchnext = NULL;
+        numflows++;
+        (nodet[modulox] + 0)->srcdst = hashx0;
+        (nodet[modulox] + 0)->swsrcdstport = hashx1;
+        (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
+        flow = nodet[modulox] + 0;
+        //(nodet[modulox] + 0)->vqueue = pktlenx;
     }
+
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
     {
         if  ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) 
@@ -101,26 +87,21 @@ if (PREDICT_FALSE(head == NULL)){
             (nodet[modulox] + 1)->srcdst = hashx0;
             (nodet[modulox] + 1)->swsrcdstport = hashx1;
             (nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
-            (nodet[modulox] + 1)->npackets = pktlenx;
-            activeflows[active_index] = nodet[modulox]+1;
-            active_index++;
-            (pkt_flow+pkt)->pkt_index = pkt_id;
-            (pkt_flow+pkt)->flow = nodet[modulox]+1;
-            pkt++;
+            flow = nodet[modulox] + 1;
+            //(nodet[modulox] + 1)->vqueue = pktlenx;
         }
         else
-        {
-            if ((nodet[modulox] + 0)->npackets <= 0)
+        {/*
+            if ((nodet[modulox] + 0)->vqueue <= 0)
             {
                 activeflows[active_index] = nodet[modulox]+0;
                 active_index++;
             }
-            (nodet[modulox] + 0)->npackets += pktlenx;
-            (pkt_flow+pkt)->pkt_index = pkt_id;
-            (pkt_flow+pkt)->flow = nodet[modulox]+0;
-            pkt++;
+            (nodet[modulox] + 0)->vqueue += pktlenx; */
+            flow = nodet[modulox] + 0;
         }
     }
+
     else if ( (nodet[modulox] + 1)->branchnext == NULL )
     {
         if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
@@ -130,39 +111,32 @@ if (PREDICT_FALSE(head == NULL)){
                 (nodet[modulox] + 2)->srcdst = hashx0;
                 (nodet[modulox] + 2)->swsrcdstport = hashx1;
                 (nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
-                (nodet[modulox] + 2)->npackets = pktlenx;
-                activeflows[active_index] = nodet[modulox]+2;
-                active_index++;
-                (pkt_flow+pkt)->pkt_index = pkt_id;
-                (pkt_flow+pkt)->flow = nodet[modulox]+2;
-                pkt++;
+                flow = nodet[modulox] + 2;
+                //(nodet[modulox] + 2)->vqueue = pktlenx;
             }
             else
-            {
-                if ((nodet[modulox] + 1)->npackets <= 0)
+            {/*
+                if ((nodet[modulox] + 1)->vqueue <= 0)
                 {
                     activeflows[active_index] = nodet[modulox]+1;
                     active_index++;
                 }
-                (nodet[modulox] + 1)->npackets += pktlenx;
-                (pkt_flow+pkt)->pkt_index = pkt_id;
-                (pkt_flow+pkt)->flow = nodet[modulox]+1;
-                pkt++;
+                (nodet[modulox] + 1)->vqueue += pktlenx; */
+                flow = nodet[modulox] + 1;
             }
         }
         else
-        {
-            if ((nodet[modulox] + 0)->npackets <= 0)
+        {/*
+            if ((nodet[modulox] + 0)->vqueue <= 0)
             {
                 activeflows[active_index] = nodet[modulox]+0;
                 active_index++;
             }
-            (nodet[modulox] + 0)->npackets += pktlenx;
-            (pkt_flow+pkt)->pkt_index = pkt_id;
-            (pkt_flow+pkt)->flow = nodet[modulox]+0;
-            pkt++;
+            (nodet[modulox] + 0)->vqueue += pktlenx; */
+            flow = nodet[modulox] + 0;
         }     
-     }
+    }
+
     else if ( (nodet[modulox] + 2)->branchnext == NULL ){
         if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
             if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
@@ -173,53 +147,42 @@ if (PREDICT_FALSE(head == NULL)){
                     (nodet[modulox] + 3)->swsrcdstport = hashx1;
                     (nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
                     (nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
-                    (nodet[modulox] + 3)->npackets = pktlenx;
-                    activeflows[active_index] = nodet[modulox]+3;
-                    active_index++;
-                    (pkt_flow+pkt)->pkt_index = pkt_id;
-                    (pkt_flow+pkt)->flow = nodet[modulox]+3;
-                    pkt++;
+                    flow = nodet[modulox] + 3;
+                    //(nodet[modulox] + 3)->vqueue = pktlenx;
                 }
                 else
-                {
-                    if ((nodet[modulox] + 2)->npackets <= 0)
+                {/*
+                    if ((nodet[modulox] + 2)->vqueue <= 0)
                     {
                         activeflows[active_index] = nodet[modulox]+2;
                         active_index++;
                     }
-                    (nodet[modulox] + 2)->npackets += pktlenx;
-                    (pkt_flow+pkt)->pkt_index = pkt_id;
-                    (pkt_flow+pkt)->flow = nodet[modulox]+2;
-                    pkt++;
+                    (nodet[modulox] + 2)->vqueue += pktlenx; */
+                    flow = nodet[modulox] + 2;
                 }
             }
             else
-            {
-                if ((nodet[modulox] + 1)->npackets <= 0)
+            {/*
+                if ((nodet[modulox] + 1)->vqueue <= 0)
                 {
                     activeflows[active_index] = nodet[modulox]+1;
                     active_index++;
                 }
-                (nodet[modulox] + 1)->npackets += pktlenx;
-                (pkt_flow+pkt)->pkt_index = pkt_id;
-                (pkt_flow+pkt)->flow = nodet[modulox]+1;
-                pkt++;
+                (nodet[modulox] + 1)->vqueue += pktlenx; */
+                flow = nodet[modulox] + 1;
             }
         }
         else
-        {
-            if ((nodet[modulox] + 0)->npackets <= 0)
+        {/*
+            if ((nodet[modulox] + 0)->vqueue <= 0)
             {
                 activeflows[active_index] = nodet[modulox]+0;
                 active_index++;
             }
-            (nodet[modulox] + 0)->npackets += pktlenx;
-            (pkt_flow+pkt)->pkt_index = pkt_id;
-            (pkt_flow+pkt)->flow = nodet[modulox]+0;
-            pkt++;
+            (nodet[modulox] + 0)->vqueue += pktlenx; */
+            flow = nodet[modulox] + 0;
         }
     }
-
 
     else
     {
@@ -233,72 +196,131 @@ if (PREDICT_FALSE(head == NULL)){
 
                         ((nodet[modulox] + 0)->update)->srcdst = hashx0;
                         ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
-                        
-                        if (((nodet[modulox] + 0)->update)->npackets <= 0)
+                        flow = (nodet[modulox] + 0)->update;
+                        /*
+                        if (((nodet[modulox] + 0)->update)->vqueue <= 0)
                         {
                             activeflows[active_index] = ((nodet[modulox] + 0)->update);
                             active_index++;
                         }
-                        ((nodet[modulox] + 0)->update)->npackets = pktlenx;
-                        (pkt_flow+pkt)->pkt_index = pkt_id;
-                        (pkt_flow+pkt)->flow = (nodet[modulox] + 0)->update;
-                        pkt++;
+                        ((nodet[modulox] + 0)->update)->vqueue = pktlenx; */
                         (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
                     }
                     else
-                    {
-                        if ((nodet[modulox] + 3)->npackets <= 0)
+                    {/*
+                        if ((nodet[modulox] + 3)->vqueue <= 0)
                         {
                             activeflows[active_index] = nodet[modulox]+3;
                             active_index++;
                         }
-                        (nodet[modulox] + 3)->npackets += pktlenx;
-                        (pkt_flow+pkt)->pkt_index = pkt_id;
-                        (pkt_flow+pkt)->flow = nodet[modulox]+3;
-                        pkt++;
+                        (nodet[modulox] + 3)->vqueue += pktlenx; */
+                        flow = nodet[modulox] + 3;
                     }
                 }
                 else
-                {
-                    if ((nodet[modulox] + 2)->npackets <= 0)
+                {/*
+                    if ((nodet[modulox] + 2)->vqueue <= 0)
                     {
                         activeflows[active_index] = nodet[modulox]+2;
                         active_index++;
                     }
-                    (nodet[modulox] + 2)->npackets += pktlenx;
-                    (pkt_flow+pkt)->pkt_index = pkt_id;
-                    (pkt_flow+pkt)->flow = nodet[modulox]+2;
-                    pkt++;
+                    (nodet[modulox] + 2)->vqueue += pktlenx; */
+                    flow = nodet[modulox] + 2;
                 }
             }
             else
-            {
-                if ((nodet[modulox] + 1)->npackets <= 0)
+            {/*
+                if ((nodet[modulox] + 1)->vqueue <= 0)
                 {
                     activeflows[active_index] = nodet[modulox]+1;
                     active_index++;
                 }
-                (nodet[modulox] + 1)->npackets += pktlenx;
-                (pkt_flow+pkt)->pkt_index = pkt_id;
-                (pkt_flow+pkt)->flow = nodet[modulox]+1;
-                pkt++;
+                (nodet[modulox] + 1)->vqueue += pktlenx; */
+                flow = nodet[modulox] + 1;
             }
         }
         else
-        {
-            if ((nodet[modulox] + 0)->npackets <= 0)
+        {/*
+            if ((nodet[modulox] + 0)->vqueue <= 0)
             {
                 activeflows[active_index] = nodet[modulox]+0;
                 active_index++;
             }
-            (nodet[modulox] + 0)->npackets += pktlenx;
-            (pkt_flow+pkt)->pkt_index = pkt_id;
-            (pkt_flow+pkt)->flow = nodet[modulox]+0;
-            pkt++;
+            (nodet[modulox] + 0)->vqueue += pktlenx; */
+            flow = nodet[modulox] + 0;
         }
+    }
+
+    return flow;
+}
+
+always_inline void arrival(flowcount_t * flow, u16 pktlenx){
+
+    if(flow->vqueue <= THRESHOLD && r_qtotal < BUFFER){
+        vstate(flow,pktlenx);
+        r_qtotal += pktlenx;
+    }
+    else {
+        vstate(NULL,0);
+        //code for dropping the packet.
     }
 }
 
+always_inline void vstate(flowcount_t * flow, u16 pktlenx){
+    flowcount_t * j;
+    u32 served,credit;
+    u8 i=0;
+    int oldnbl=nbl+1;
+    credit = capacity /*This is just a temporary variable. Determine the capacity to be shared*/;
+    while (oldnbl>nbl && nbl > 0){
+        i=1;
+        served = credit/nbl; //write a code to determine nbl;
+        credit = 0;
+        for (int k=0;k<oldnbl;k++){
+            j = flowout();
+            if(j->vqueue > served){
+                j->vqueue -= served;
+                flowin(j);
+            }
+            else{
+                credit += served - j->vqueue;
+                j->vqueue = 0;
+                nbl--;
+            }
+        }
+    }
+
+    if (flow != NULL){
+        if (flow->vqueue == 0){
+            nbl++;
+            flowin(flow);
+        }
+        flow->vqueue += pktlenx;
+    }
+}
+
+void flowin(flowcount_t * flow){
+    activelist_t * temp;
+    temp = malloc(sizeof(activelist_t));
+    temp->flow = flow;
+    temp->next = NULL;
+    if (head_af == NULL){
+        head_af = temp;
+        tail_af = temp;
+    }
+    else{
+        tail_af->next = temp;
+        tail_af = temp;
+    }
+}
+
+flowcount_t * flowout(){
+    flowcount_t * temp;
+    temp = head_af->flow;
+    free(head_af);
+    head_af = head_af->next;
+    return temp;
+}
 /*
 always_inline void
 active_flows () {
@@ -307,13 +329,13 @@ active_flows () {
     current = head;
     u8 active_index = 0;
     while (current != NULL){
-        if(current->npackets > 0){
+        if(current->vqueue > 0){
             activeflows[active_index] = current;
             active_index++;
         }
         branch = current->branchnext;
         while (branch != NULL && branch != current){
-            if(branch->npackets > 0) {
+            if(branch->vqueue > 0) {
                 activeflows[active_index] = branch;
                 active_index++;
             }
@@ -332,13 +354,13 @@ clear_queues()
     flowcount_t * branch;
     current = head;
     while (current != NULL){
-        if(current->npackets > 0){
-            current->npackets = 0;
+        if(current->vqueue > 0){
+            current->vqueue = 0;
         }
         branch = current->branchnext;
         while (branch != NULL && branch != current){
-            if(branch->npackets > 0) {
-                branch->npackets = 0;
+            if(branch->vqueue > 0) {
+                branch->vqueue = 0;
             }
             branch = branch->branchnext;
         }
@@ -352,7 +374,7 @@ clear_active_table ()
     int i = 0;
     while (activeflows[i] != NULL && i < VLIB_FRAME_SIZE)
     {
-        (activeflows[i])->npackets = 0;
+        (activeflows[i])->vqueue = 0;
         activeflows[i]=NULL;
         i++;
     }
