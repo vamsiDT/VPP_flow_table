@@ -213,9 +213,8 @@ flowcount_t * flowout(){
 always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     flowcount_t * j;
     u32 served,credit;
-    u8 i=0;
     int oldnbl=nbl+1;
-    credit = capacity /*This is just a temporary variable. Determine the capacity to be shared*/;
+    credit = BUFFER/*This is just a temporary variable. Determine the capacity to be shared*/;
     while (oldnbl>nbl && nbl > 0){
         i=1;
         served = credit/nbl;

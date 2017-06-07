@@ -2334,7 +2334,6 @@ ip4_rewrite_inline (vlib_main_t * vm,
   n_left_from = frame->n_vectors;
   next_index = node->cached_next_index;
   u32 thread_index = vlib_get_thread_index ();
-  clear_active_table();
 
   while (n_left_from > 0)
     {
@@ -2739,9 +2738,6 @@ if (~(is_midchain || is_mcast)){
   /* Need to do trace after rewrites to pick up new packet data. */
   if (node->flags & VLIB_NODE_FLAG_TRACE)
     ip4_forward_next_trace (vm, node, frame, VLIB_TX);
-
-	pkt = 0;
-	//clear_active_table();
 
   return frame->n_vectors;
 }
