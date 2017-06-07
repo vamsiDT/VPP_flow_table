@@ -54,7 +54,7 @@
 #include <math.h>
 #include <vnet/ip/flow_table.h>
 #include <vnet/ip/flow_table_var.h>
-#include <vnet/ip/flow_table_cli.h>
+//#include <vnet/ip/flow_table_cli.h>
 /**
  * @file
  * @brief IPv4 Forwarding.
