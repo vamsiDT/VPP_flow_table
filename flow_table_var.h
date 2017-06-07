@@ -1,6 +1,7 @@
 #include <vnet/ip/flow_table.h>
 flowcount_t *  nodet[TABLESIZE] ;
-activelist_t * head_af,tail_af;
+activelist_t * head_af;
+activelist_t * tail_af;
 flowcount_t *  head ;
 flowcount_t *  previousnode;
 flowcount_t *  tail;

@@ -33,7 +33,8 @@ typedef struct activelist{
 }activelist_t;
 
 extern flowcount_t *  nodet[TABLESIZE];
-extern activelist_t * head_af,tail_af;
+extern activelist_t * head_af;
+extern activelist_t * tail_af;
 extern flowcount_t *  head ;
 extern int numflows;
 extern u32 r_qtotal;
@@ -181,18 +182,31 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
     return flow;
 }
 
-/* arrival function for each packet */
-always_inline void arrival(flowcount_t * flow, u16 pktlenx){
-
-    if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
-        vstate(flow,pktlenx);
-        //r_qtotal += pktlenx;
+/* function to insert the flow in blacklogged flows list. The flow is inserted at the end of the list i.e tail.*/
+void flowin(flowcount_t * flow){
+    activelist_t * temp;
+    temp = malloc(sizeof(activelist_t));
+    temp->flow = flow;
+    temp->next = NULL;
+    if (head_af == NULL){
+        head_af = temp;
+        tail_af = temp;
     }
-    else {
-        vstate(NULL,0);
-        //code for dropping the packet.
+    else{
+        tail_af->next = temp;
+        tail_af = temp;
     }
 }
+
+/* function to extract the flow from the blacklogged flows list. The flow is taken from the head of the list. */
+flowcount_t * flowout(){
+    flowcount_t * temp;
+    temp = head_af->flow;
+    free(head_af);
+    head_af = head_af->next;
+    return temp;
+}
+
 
 /* vstate algorithm */
 always_inline void vstate(flowcount_t * flow, u16 pktlenx){
@@ -228,35 +242,24 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     }
 }
 
-/* function to insert the flow in blacklogged flows list. The flow is inserted at the end of the list i.e tail.*/
-void flowin(flowcount_t * flow){
-    activelist_t * temp;
-    temp = malloc(sizeof(activelist_t));
-    temp->flow = flow;
-    temp->next = NULL;
-    if (head_af == NULL){
-        head_af = temp;
-        tail_af = temp;
+/* arrival function for each packet */
+always_inline void arrival(flowcount_t * flow, u16 pktlenx){
+
+    if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
+        vstate(flow,pktlenx);
+        //r_qtotal += pktlenx;
     }
-    else{
-        tail_af->next = temp;
-        tail_af = temp;
+    else {
+        vstate(NULL,0);
+        //code for dropping the packet.
     }
 }
 
-/* function to extract the flow from the blacklogged flows list. The flow is taken from the head of the list. */
-flowcount_t * flowout(){
-    flowcount_t * temp;
-    temp = head_af->flow;
-    free(head_af);
-    head_af = head_af->next;
-    return temp;
-}
 
 always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
     flowcount_t * i;
     i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
-    arrival(i);
+    arrival(i,pktlenx);
 }
 #endif /*FLOW_TABLE_H*/
 
