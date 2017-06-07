@@ -216,7 +216,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
     int oldnbl=nbl+1;
     credit = BUFFER/*This is just a temporary variable. Determine the capacity to be shared*/;
     while (oldnbl>nbl && nbl > 0){
-        i=1;
+        oldnbl = nbl;
         served = credit/nbl;
         credit = 0;
         for (int k=0;k<oldnbl;k++){
