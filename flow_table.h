@@ -42,7 +42,7 @@ extern u32 nbl;
 
 /* Flow classification function */
 always_inline flowcount_t *
-flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id ){
+flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 
     flowcount_t * flow;
 
@@ -185,9 +185,9 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx, u32 pkt_id
 /* arrival function for each packet */
 always_inline void arrival(flowcount_t * flow, u16 pktlenx){
 
-    if(flow->vqueue <= THRESHOLD && r_qtotal < BUFFER){
+    if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
         vstate(flow,pktlenx);
-        r_qtotal += pktlenx;
+        //r_qtotal += pktlenx;
     }
     else {
         vstate(NULL,0);
@@ -254,6 +254,11 @@ flowcount_t * flowout(){
     return temp;
 }
 
+always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
+    flowcount_t * i;
+    i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
+    arrival(i);
+}
 #endif /*FLOW_TABLE_H*/
 
 /*

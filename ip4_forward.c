@@ -2547,8 +2547,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
 	pktlen0 = p0->current_length;
 	pktlen1 = p1->current_length;
-	flow_table_classify(modulo0,hash00,hash01,pktlen0,pi0);
-	flow_table_classify(modulo1,hash10,hash11,pktlen1,pi1);
+	fq(modulo0,hash00,hash01,pktlen0);
+	fq(modulo1,hash10,hash11,pktlen1);
 }
 ////////////end of extra code//////////////
 
@@ -2724,7 +2724,7 @@ if (~(is_midchain || is_mcast)){
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	pktlen0 = p0->current_length;
-	flow_table_classify(modulo0,hash00,hash01,pktlen0,pi0);
+	fq(modulo0,hash00,hash01,pktlen0);
 }
 ///////////////end of extra code///////////
 	  vlib_validate_buffer_enqueue_x1 (vm, node, next_index,
