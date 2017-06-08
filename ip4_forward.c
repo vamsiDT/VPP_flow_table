@@ -2537,7 +2537,7 @@ ip4_rewrite_inline (vlib_main_t * vm,
 
 //////////////start of extra code///////////////
 	if (~(is_midchain || is_mcast)){
-		
+	u8 drop0,drop1;
 	hash00 = (( (u64)(ip0->src_address.as_u32)) << 32 ) | ip0->dst_address.as_u32 ;
     	hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 	hash10 = (( (u64)(ip1->src_address.as_u32)) << 32 ) | ip1->dst_address.as_u32 ;
@@ -2546,8 +2546,14 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
 	pktlen0 = p0->current_length;
 	pktlen1 = p1->current_length;
-	fq(modulo0,hash00,hash01,pktlen0,p0);
-	fq(modulo1,hash10,hash11,pktlen1,p1);
+	drop0 = fq(modulo0,hash00,hash01,pktlen0,p0);
+	drop1 = fq(modulo1,hash10,hash11,pktlen1,p1);
+	if(PREDICT_FALSE(drop0 == 1)){
+		next0 = IP4_REWRITE_NEXT_DROP;
+	}
+	if(PREDICT_FALSE(drop1 == 1)){
+		next1 = IP4_REWRITE_NEXT_DROP;
+	}
 }
 ////////////end of extra code//////////////
 
@@ -2717,14 +2723,18 @@ ip4_rewrite_inline (vlib_main_t * vm,
 ///////////////start of extra code///////////
 if (~(is_midchain || is_mcast)){
 		
-
+	u8 drop;
     hash00 = (( (u64)(ip0->src_address.as_u32)) << 32 ) | ip0->dst_address.as_u32 ;
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	pktlen0 = p0->current_length;
 	/*function for flow classification and updating virtual queues. Vqueue state update is only after each vector*/
-	fq(modulo0,hash00,hash01,pktlen0,p0);
+	drop = fq(modulo0,hash00,hash01,pktlen0,p0);
+	if(PREDICT_FALSE(drop == 1)){
+		next0 = IP4_REWRITE_NEXT_DROP;
+	}
+		
 }
 ///////////////end of extra code///////////
 	  vlib_validate_buffer_enqueue_x1 (vm, node, next_index,

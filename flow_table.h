@@ -237,29 +237,31 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
             nbl++;
             flowin(flow);
         }
-        flow->vqueue += pktlenx; 
+        flow->vqueue += pktlenx;
     }
 }
 
 /* arrival function for each packet */
-always_inline void arrival(flowcount_t * flow, u16 pktlenx,vlib_buffer_t *b0){
-
+always_inline u8 arrival(flowcount_t * flow, u16 pktlenx,vlib_buffer_t *b0){
+u8 drop;
     if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
         vstate(flow,pktlenx,0); 
         //r_qtotal += pktlenx;
+		drop = 0;
     }
     else {
-        vnet_buffer (b0)->sw_if_index[VLIB_TX] = vnet_buffer (b0)->sw_if_index[VLIB_RX];
+        drop = 1;
         //update vstate is only after a vector. So no update before dropping a packet here.
-        //code for dropping the packet.
     }
+return drop;
 }
 
-
-always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx,vlib_buffer_t *b0){
+always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx,vlib_buffer_t *b0){
     flowcount_t * i;
+	u8 drop;
     i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
-    arrival(i,pktlenx,b0);
+    drop = arrival(i,pktlenx,b0);
+    return drop;
 }
 
 always_inline void departure (){
