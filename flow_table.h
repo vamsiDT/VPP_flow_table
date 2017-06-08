@@ -16,8 +16,8 @@
 #define TABLESIZE 1024
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
-#define BUFFER 1370000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
-#define THRESHOLD 6000 //just a random number. Update the value with proper theoritical approach.
+#define BUFFER 384000 // just assumed 256*1500 for testing purpose. Update the value with proper theoritical approach.
+#define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
@@ -213,8 +213,8 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     flowcount_t * j;
     u32 served,credit;
     int oldnbl=nbl+1;
-    credit = (t - old_t)*(1000000000)/*This is just a temporary variable. Determine the capacity to be shared*/;
-    printf("%lu\t%lu",old_t,t);
+    credit = (t - old_t);
+    //printf("%lu\t%lu\n",old_t,t);
     if(PREDICT_FALSE(update == 1)){
         while (oldnbl>nbl && nbl > 0){
             oldnbl = nbl;
