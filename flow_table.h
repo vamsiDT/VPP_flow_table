@@ -16,7 +16,7 @@
 #define TABLESIZE 1024
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
-#define BUFFER 137000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
+#define BUFFER 1370000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
 #define THRESHOLD 100000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
@@ -55,8 +55,6 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
         (nodet[modulox] + 1)->branchnext = NULL;
         (nodet[modulox] + 2)->branchnext = NULL;
         (nodet[modulox] + 3)->branchnext = NULL;
-        head_af = malloc(sizeof(activelist_t));
-        tail_af = malloc(sizeof(activelist_t));
         numflows++;
         (nodet[modulox] + 0)->srcdst = hashx0;
         (nodet[modulox] + 0)->swsrcdstport = hashx1;
@@ -203,24 +201,24 @@ void flowin(flowcount_t * flow){
 flowcount_t * flowout(){
     flowcount_t * temp;
     temp = head_af->flow;
-    free(head_af);
     head_af = head_af->next;
     return temp;
 }
 
 
 /* vstate algorithm */
-always_inline void vstate(flowcount_t * flow, u16 pktlenx){
+always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     flowcount_t * j;
     u32 served,credit;
     int oldnbl=nbl+1;
     credit = BUFFER/*This is just a temporary variable. Determine the capacity to be shared*/;
+    if(PREDICT_FALSE(update == 1)){
     while (oldnbl>nbl && nbl > 0){
         oldnbl = nbl;
         served = credit/nbl;
-        credit = 0;
+        credit = 0; 
         for (int k=0;k<oldnbl;k++){
-            j = flowout();
+            j = flowout(); 
             if(j->vqueue > served){
                 j->vqueue -= served;
                 flowin(j);
@@ -232,13 +230,14 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
             }
         }
     }
+    }
 
     if (flow != NULL){
         if (flow->vqueue == 0){
             nbl++;
             flowin(flow);
         }
-        flow->vqueue += pktlenx;
+        flow->vqueue += pktlenx; 
     }
 }
 
@@ -246,11 +245,11 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx){
 always_inline void arrival(flowcount_t * flow, u16 pktlenx){
 
     if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
-        vstate(flow,pktlenx);
+        vstate(flow,pktlenx,0); 
         //r_qtotal += pktlenx;
     }
     else {
-        vstate(NULL,0);
+        //update vstate is only after a vector. So no update before dropping a packet here.
         //code for dropping the packet.
     }
 }
@@ -260,6 +259,10 @@ always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
     flowcount_t * i;
     i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
     arrival(i,pktlenx);
+}
+
+always_inline void departure (){
+	vstate(NULL,0,1);
 }
 #endif /*FLOW_TABLE_H*/
 

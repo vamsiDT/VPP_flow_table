@@ -2738,7 +2738,7 @@ if (~(is_midchain || is_mcast)){
   /* Need to do trace after rewrites to pick up new packet data. */
   if (node->flags & VLIB_NODE_FLAG_TRACE)
     ip4_forward_next_trace (vm, node, frame, VLIB_TX);
-
+	departure();
   return frame->n_vectors;
 }
 
