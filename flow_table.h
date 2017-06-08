@@ -17,7 +17,7 @@
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 1370000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
-#define THRESHOLD 12800 //just a random number. Update the value with proper theoritical approach.
+#define THRESHOLD 6000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
@@ -40,6 +40,8 @@ extern flowcount_t *  head ;
 extern int numflows;
 extern u32 r_qtotal;
 extern u32 nbl;
+extern u64 t;
+extern u64 old_t;
 
 /* Flow classification function */
 always_inline flowcount_t *
@@ -211,7 +213,8 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     flowcount_t * j;
     u32 served,credit;
     int oldnbl=nbl+1;
-    credit = BUFFER/*This is just a temporary variable. Determine the capacity to be shared*/;
+    credit = (t - old_t)*(1000000000)/*This is just a temporary variable. Determine the capacity to be shared*/;
+    printf("%d",credit);
     if(PREDICT_FALSE(update == 1)){
         while (oldnbl>nbl && nbl > 0){
             oldnbl = nbl;
@@ -264,6 +267,7 @@ always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx,vlib_buffe
     return drop;
 }
 
+/*vstate update function before sending the vector. This function is after processing all the packets in the vector and runs only once per vector */
 always_inline void departure (){
 	vstate(NULL,0,1);
 }

@@ -2334,7 +2334,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
   n_left_from = frame->n_vectors;
   next_index = node->cached_next_index;
   u32 thread_index = vlib_get_thread_index ();
-
+  old_t = t;
+  t = (u64)(vlib_time_now(vm));
   while (n_left_from > 0)
     {
       vlib_get_next_frame (vm, node, next_index, to_next, n_left_to_next);
