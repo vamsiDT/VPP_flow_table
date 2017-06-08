@@ -17,7 +17,7 @@
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 1370000 // just assumed 250*1500 for testing purpose. Update the value with proper theoritical approach.
-#define THRESHOLD 100000 //just a random number. Update the value with proper theoritical approach.
+#define THRESHOLD 12800 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
@@ -213,23 +213,23 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     int oldnbl=nbl+1;
     credit = BUFFER/*This is just a temporary variable. Determine the capacity to be shared*/;
     if(PREDICT_FALSE(update == 1)){
-    while (oldnbl>nbl && nbl > 0){
-        oldnbl = nbl;
-        served = credit/nbl;
-        credit = 0; 
-        for (int k=0;k<oldnbl;k++){
-            j = flowout(); 
-            if(j->vqueue > served){
-                j->vqueue -= served;
-                flowin(j);
-            }
-            else{
-                credit += served - j->vqueue;
-                j->vqueue = 0;
-                nbl--;
+        while (oldnbl>nbl && nbl > 0){
+            oldnbl = nbl;
+            served = credit/nbl;
+            credit = 0; 
+            for (int k=0;k<oldnbl;k++){
+                j = flowout(); 
+                if(j->vqueue > served){
+                    j->vqueue -= served;
+                    flowin(j);
+                }
+                else{
+                    credit += served - j->vqueue;
+                    j->vqueue = 0;
+                    nbl--;
+                }
             }
         }
-    }
     }
 
     if (flow != NULL){
@@ -242,23 +242,24 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
 }
 
 /* arrival function for each packet */
-always_inline void arrival(flowcount_t * flow, u16 pktlenx){
+always_inline void arrival(flowcount_t * flow, u16 pktlenx,vlib_buffer_t *b0){
 
     if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
         vstate(flow,pktlenx,0); 
         //r_qtotal += pktlenx;
     }
     else {
+        vnet_buffer (b0)->sw_if_index[VLIB_TX] = vnet_buffer (b0)->sw_if_index[VLIB_RX];
         //update vstate is only after a vector. So no update before dropping a packet here.
         //code for dropping the packet.
     }
 }
 
 
-always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
+always_inline void fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx,vlib_buffer_t *b0){
     flowcount_t * i;
     i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
-    arrival(i,pktlenx);
+    arrival(i,pktlenx,b0);
 }
 
 always_inline void departure (){
