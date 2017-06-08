@@ -214,7 +214,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     u32 served,credit;
     int oldnbl=nbl+1;
     credit = (t - old_t)*(1000000000)/*This is just a temporary variable. Determine the capacity to be shared*/;
-    printf("%d",credit);
+    printf("%lu\t%lu",old_t,t);
     if(PREDICT_FALSE(update == 1)){
         while (oldnbl>nbl && nbl > 0){
             oldnbl = nbl;
