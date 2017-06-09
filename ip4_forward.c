@@ -2735,7 +2735,6 @@ if (~(is_midchain || is_mcast)){
 	if(PREDICT_FALSE(drop == 1)){
 		next0 = IP4_REWRITE_NEXT_DROP;
 	}
-		
 }
 ///////////////end of extra code///////////
 	  vlib_validate_buffer_enqueue_x1 (vm, node, next_index,
