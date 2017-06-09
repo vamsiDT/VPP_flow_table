@@ -245,7 +245,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
 }
 
 /* arrival function for each packet */
-always_inline u8 arrival(flowcount_t * flow, u16 pktlenx,vlib_buffer_t *b0){
+always_inline u8 arrival(flowcount_t * flow, u16 pktlenx){
 u8 drop;
     if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
         vstate(flow,pktlenx,0); 
@@ -259,11 +259,11 @@ u8 drop;
 return drop;
 }
 
-always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx,vlib_buffer_t *b0){
+always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
     flowcount_t * i;
 	u8 drop;
     i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
-    drop = arrival(i,pktlenx,b0);
+    drop = arrival(i,pktlenx);
     return drop;
 }
 
