@@ -16,7 +16,7 @@
 #define TABLESIZE 1024
 #define ALPHA 0.9   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
-#define BUFFER 384000 // just assumed 256*1500 for testing purpose. Update the value with proper theoritical approach.
+#define BUFFER 384000 //just a random number. Update the value with proper theoritical approach.
 #define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
