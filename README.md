@@ -23,7 +23,7 @@ $VPP_ROOT = /your/vpp/directory/ ;
 #Description
 
     1.Currently the table size is 1024*4;
-    2.This update contains fair-drop scheduling algorithm.
+    2.This update contains fair-drop scheduling Algorithm.
 
 #TODO
 
