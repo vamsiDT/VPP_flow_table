@@ -156,6 +156,7 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 
                         ((nodet[modulox] + 0)->update)->srcdst = hashx0;
                         ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
+			((nodet[modulox] + 0)->update)->vqueue = 0;
                         flow = (nodet[modulox] + 0)->update;
                         (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
                     }
