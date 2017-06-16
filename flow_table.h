@@ -156,6 +156,7 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 
                         ((nodet[modulox] + 0)->update)->srcdst = hashx0;
                         ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
+                        r_qtotal++;
 			//((nodet[modulox] + 0)->update)->vqueue = 0;	//Exception case. Shouldn't happen very often.
                         flow = (nodet[modulox] + 0)->update;
                         (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
@@ -272,6 +273,25 @@ always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 always_inline void departure (){
 	vstate(NULL,0,1);
 }
+
+/* CLI COMMAND to check collisions in flow table*/
+static clib_error_t *
+show_collisions_fn (vlib_main_t * vm,
+                          unformat_input_t * input, vlib_cli_command_t * cmd)
+{
+    clib_error_t *error = 0;
+    vlib_cli_output (vm, "Number of Collisions:%d\n",r_qtotal);
+        return error;
+}
+
+VLIB_CLI_COMMAND (show_collisions_command, static) = {
+  .path = "show collisions",
+  .short_help = "show collisions",
+  .function = show_collisions_fn,
+};
+
+
+
 #endif /*FLOW_TABLE_H*/
 
 /*
