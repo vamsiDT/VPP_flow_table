@@ -2545,8 +2545,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
     	hash11 = (((u64)(udp1->src_port ) << 16 ) | (u64)(udp1->dst_port)) | (((u64)(vnet_buffer (p1)->sw_if_index[VLIB_TX])) << 32) ;
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
-	pktlen0 = p0->current_length;
-	pktlen1 = p1->current_length;
+	pktlen0 = p0->current_length + FCS;
+	pktlen1 = p1->current_length + FCS;
 	drop0 = fq(modulo0,hash00,hash01,pktlen0);
 	drop1 = fq(modulo1,hash10,hash11,pktlen1);
 	if(PREDICT_FALSE(drop0 == 1)){
@@ -2729,7 +2729,7 @@ if (~(is_midchain || is_mcast)){
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
-	pktlen0 = p0->current_length;
+	pktlen0 = p0->current_length + FCS;
 	/*function for flow classification and updating virtual queues. Vqueue state update is only after each vector*/
 	drop = fq(modulo0,hash00,hash01,pktlen0);
 	if(PREDICT_FALSE(drop == 1)){
