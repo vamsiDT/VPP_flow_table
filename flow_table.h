@@ -213,7 +213,7 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
     flowcount_t * j;
     u32 served,credit;
     int oldnbl=nbl+1;
-    credit = (t - old_t)*0.1;
+    credit = (t - old_t)*ALPHA;
     //printf("%lu\t%lu\n",old_t,t);
     if(PREDICT_FALSE(update == 1)){
         while (oldnbl>nbl && nbl > 0){
