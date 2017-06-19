@@ -54,6 +54,7 @@
 #include <math.h>
 #include <vnet/ip/flow_table.h>
 #include <vnet/ip/flow_table_var.h>
+#include <vlib/vlib.h>
 //#include <vnet/ip/flow_table_cli.h>
 /**
  * @file
@@ -2545,8 +2546,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
     	hash11 = (((u64)(udp1->src_port ) << 16 ) | (u64)(udp1->dst_port)) | (((u64)(vnet_buffer (p1)->sw_if_index[VLIB_TX])) << 32) ;
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
 	modulo1 = (((hash10)^(hash11)))%TABLESIZE;
-	pktlen0 = p0->current_length + FCS;
-	pktlen1 = p1->current_length + FCS;
+	pktlen0 = p0->current_length + 4;
+	pktlen1 = p1->current_length + 4;
 	drop0 = fq(modulo0,hash00,hash01,pktlen0);
 	drop1 = fq(modulo1,hash10,hash11,pktlen1);
 	if(PREDICT_FALSE(drop0 == 1)){
