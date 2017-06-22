@@ -2730,7 +2730,7 @@ if (~(is_midchain || is_mcast)){
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
-	pktlen0 = p0->current_length + FCS;
+	pktlen0 = p0->current_length + 4;
 	/*function for flow classification and updating virtual queues. Vqueue state update is only after each vector*/
 	drop = fq(modulo0,hash00,hash01,pktlen0);
 	if(PREDICT_FALSE(drop == 1)){
