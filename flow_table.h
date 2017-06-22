@@ -13,8 +13,8 @@
 #include <math.h>
 #ifndef FLOW_TABLE_H
 #define FLOW_TABLE_H
-#define TABLESIZE 1024
-#define ALPHA 0.9   // ALPHA = Output/Input
+#define TABLESIZE 4096
+#define ALPHA 0.1   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 384000 //just a random number. Update the value with proper theoritical approach.
 #define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
@@ -61,7 +61,7 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
         (nodet[modulox] + 0)->srcdst = hashx0;
         (nodet[modulox] + 0)->swsrcdstport = hashx1;
         (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
-        head = nodet[modulox] + 0 ;
+        head = nodet[modulox] + 0;
         flow = nodet[modulox] + 0;
     }
 
@@ -202,8 +202,11 @@ void flowin(flowcount_t * flow){
 /* function to extract the flow from the blacklogged flows list. The flow is taken from the head of the list. */
 flowcount_t * flowout(){
     flowcount_t * temp;
+    activelist_t * next;
     temp = head_af->flow;
-    head_af = head_af->next;
+    next = head_af->next;
+    free(head_af);
+    head_af = next;
     return temp;
 }
 

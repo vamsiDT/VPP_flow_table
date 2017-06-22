@@ -54,7 +54,6 @@
 #include <math.h>
 #include <vnet/ip/flow_table.h>
 #include <vnet/ip/flow_table_var.h>
-#include <vlib/vlib.h>
 //#include <vnet/ip/flow_table_cli.h>
 /**
  * @file
@@ -2550,6 +2549,8 @@ ip4_rewrite_inline (vlib_main_t * vm,
 	pktlen1 = p1->current_length + 4;
 	drop0 = fq(modulo0,hash00,hash01,pktlen0);
 	drop1 = fq(modulo1,hash10,hash11,pktlen1);
+    printf("%u\n",ip0->dst_address.as_u32);
+    printf("%u\n",ip1->dst_address.as_u32);
 	if(PREDICT_FALSE(drop0 == 1)){
 		next0 = IP4_REWRITE_NEXT_DROP;
 	}
@@ -2730,9 +2731,10 @@ if (~(is_midchain || is_mcast)){
     hash01 = (((u64)(udp0->src_port ) << 16 ) | (u64)(udp0->dst_port)) | (((u64)(vnet_buffer (p0)->sw_if_index[VLIB_TX])) << 32) ;
 
 	modulo0 = (((hash00)^(hash01)))%TABLESIZE;
-	pktlen0 = p0->current_length + FCS;
+	pktlen0 = p0->current_length + 4;
 	/*function for flow classification and updating virtual queues. Vqueue state update is only after each vector*/
 	drop = fq(modulo0,hash00,hash01,pktlen0);
+    printf("%u\n",ip0->dst_address.as_u32);
 	if(PREDICT_FALSE(drop == 1)){
 		next0 = IP4_REWRITE_NEXT_DROP;
 	}
