@@ -22,7 +22,9 @@
       1. Please check the function in this repository for changes that are to be made.
       2. look for the comments "start of extra code; end of extra code" to find the changes to be made.
 
-#TODO
+----
+
+# TODO
 
     1.Choose a good hash function for this application and update;
     2.Add an option to enable or disable the fair-drop scheduling.
