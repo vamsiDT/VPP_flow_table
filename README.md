@@ -4,7 +4,7 @@
 * This is a modification within VPP src for flow classification,determining active flows and fair-dropping.
 * Fair-drop is implemented at the input side of VPP forwarding graph. It is implemented in ip4-input node of VPP which is the first node after dpdk-input for ipv4 traffic.
 * RSS-hash result from hardware which is stored in mbufs as hash.rss is used to classify flows.
-* Currently the RSS key used is the default intel 82599 rss hash key provided in the datasheet. This key is also available by default in dpdk package.
+* Currently the RSS key used, is the default intel 82599 rss hash key provided in the datasheet. This key is also available by default in dpdk package.
 
 ----
 
