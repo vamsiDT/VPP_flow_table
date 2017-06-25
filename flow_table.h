@@ -14,15 +14,14 @@
 #ifndef FLOW_TABLE_H
 #define FLOW_TABLE_H
 #define TABLESIZE 4096
-#define ALPHA 0.1   // ALPHA = Output/Input
+#define ALPHA 1   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 384000 //just a random number. Update the value with proper theoritical approach.
 #define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
 
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
-    u64 srcdst;
-    u64 swsrcdstport;
+    u32 hash;
     int vqueue;
     struct flowcount * branchnext;
     struct flowcount * update;
@@ -45,7 +44,7 @@ extern u64 old_t;
 
 /* Flow classification function */
 always_inline flowcount_t *
-flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
+flow_table_classify(u32 modulox, u32 hashx0, u16 pktlenx){
 
     flowcount_t * flow;
 
@@ -58,8 +57,7 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
         (nodet[modulox] + 2)->branchnext = NULL;
         (nodet[modulox] + 3)->branchnext = NULL;
         numflows++;
-        (nodet[modulox] + 0)->srcdst = hashx0;
-        (nodet[modulox] + 0)->swsrcdstport = hashx1;
+        (nodet[modulox] + 0)->hash = hashx0;
         (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
         head = nodet[modulox] + 0;
         flow = nodet[modulox] + 0;
@@ -72,19 +70,17 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
         (nodet[modulox] + 2)->branchnext = NULL;
         (nodet[modulox] + 3)->branchnext = NULL;
         numflows++;
-        (nodet[modulox] + 0)->srcdst = hashx0;
-        (nodet[modulox] + 0)->swsrcdstport = hashx1;
+        (nodet[modulox] + 0)->hash = hashx0;
         (nodet[modulox] + 0)->update = (nodet[modulox] + 0);
         flow = nodet[modulox] + 0;
     }
 
     else if  ((nodet[modulox] + 0)->branchnext == NULL)
     {
-        if  ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) 
+        if  ( (nodet[modulox] + 0)->hash != hashx0 )
         {
             numflows++;
-            (nodet[modulox] + 1)->srcdst = hashx0;
-            (nodet[modulox] + 1)->swsrcdstport = hashx1;
+            (nodet[modulox] + 1)->hash = hashx0;
             (nodet[modulox] + 0)->branchnext = (nodet[modulox] + 1);
             flow = nodet[modulox] + 1;
         }
@@ -96,12 +92,11 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 
     else if ( (nodet[modulox] + 1)->branchnext == NULL )
     {
-        if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
-            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
-                
+        if ( (nodet[modulox] + 0)->hash != hashx0 ) {
+            if ( (nodet[modulox] + 1)->hash != hashx0 ) {
+
                 numflows++;
-                (nodet[modulox] + 2)->srcdst = hashx0;
-                (nodet[modulox] + 2)->swsrcdstport = hashx1;
+                (nodet[modulox] + 2)->hash = hashx0;
                 (nodet[modulox] + 1)->branchnext = nodet[modulox] + 2;
                 flow = nodet[modulox] + 2;
             }
@@ -113,17 +108,16 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
         else
         {
             flow = nodet[modulox] + 0;
-        }     
+        }
     }
 
     else if ( (nodet[modulox] + 2)->branchnext == NULL ){
-        if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
-            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
-                if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
-                    
+        if ( (nodet[modulox] + 0)->hash != hashx0 ) {
+            if ( (nodet[modulox] + 1)->hash != hashx0 ) {
+                if ( (nodet[modulox] + 2)->hash != hashx0 ) {
+
                     numflows++;
-                    (nodet[modulox] + 3)->srcdst = hashx0;
-                    (nodet[modulox] + 3)->swsrcdstport = hashx1;
+                    (nodet[modulox] + 3)->hash = hashx0;
                     (nodet[modulox] + 2)->branchnext = nodet[modulox] + 3;
                     (nodet[modulox] + 3)->branchnext = nodet[modulox] + 0;
                     flow = nodet[modulox] + 3;
@@ -146,16 +140,15 @@ flow_table_classify(u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
 
     else
     {
-        if ( ((nodet[modulox] + 0)->srcdst != hashx0) || ((nodet[modulox] + 0)->swsrcdstport != hashx1) ) {
+        if ( (nodet[modulox] + 0)->hash != hashx0 ) {
 
-            if ( ((nodet[modulox] + 1)->srcdst != hashx0) || ((nodet[modulox] + 1)->swsrcdstport != hashx1) ) {
+            if ( (nodet[modulox] + 1)->hash != hashx0 ) {
 
-                if ( ((nodet[modulox] + 2)->srcdst != hashx0) || ((nodet[modulox] + 2)->swsrcdstport != hashx1) ) {
+                if ( (nodet[modulox] + 2)->hash != hashx0 ) {
 
-                    if ( ((nodet[modulox] + 3)->srcdst != hashx0) || ((nodet[modulox] + 3)->swsrcdstport != hashx1) ) {
+                    if ( (nodet[modulox] + 3)->hash != hashx0 ) {
 
-                        ((nodet[modulox] + 0)->update)->srcdst = hashx0;
-                        ((nodet[modulox] + 0)->update)->swsrcdstport = hashx1;
+                        ((nodet[modulox] + 0)->update)->hash = hashx0;
                         flow = (nodet[modulox] + 0)->update;
                         (nodet[modulox] + 0)->update = ((nodet[modulox] + 0)->update)->branchnext ;
                     }
@@ -222,9 +215,9 @@ always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
         while (oldnbl>nbl && nbl > 0){
             oldnbl = nbl;
             served = credit/nbl;
-            credit = 0; 
+            credit = 0;
             for (int k=0;k<oldnbl;k++){
-                j = flowout(); 
+                j = flowout();
                 if(j->vqueue > served){
                     j->vqueue -= served;
                     flowin(j);
@@ -253,7 +246,7 @@ u8 drop;
     if(flow->vqueue <= THRESHOLD /*&& r_qtotal < BUFFER*/){
         vstate(flow,pktlenx,0); 
         //r_qtotal += pktlenx;
-		drop = 0;
+        drop = 0;
     }
     else {
         drop = 1;
@@ -262,17 +255,17 @@ u8 drop;
 return drop;
 }
 
-always_inline u8 fq (u32 modulox, u64 hashx0, u64 hashx1, u16 pktlenx){
+always_inline u8 fq (u32 modulox, u32 hashx0, u16 pktlenx){
     flowcount_t * i;
-	u8 drop;
-    i = flow_table_classify(modulox,hashx0,hashx1,pktlenx);
+    u8 drop;
+    i = flow_table_classify(modulox,hashx0,pktlenx);
     drop = arrival(i,pktlenx);
     return drop;
 }
 
 /*vstate update function before sending the vector. This function is after processing all the packets in the vector and runs only once per vector */
 always_inline void departure (){
-	vstate(NULL,0,1);
+    vstate(NULL,0,1);
 }
 #endif /*FLOW_TABLE_H*/
 
@@ -283,3 +276,4 @@ always_inline void departure (){
 *   End
 *
 */
+
