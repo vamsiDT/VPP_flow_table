@@ -2,9 +2,13 @@
 
 * VPP (Vector Packet Processor) is a high-speed packet processing engine which runs in user-space and implements kernel bypass techniques to achieve high-speed packet processing.
 * This is a modification within VPP src for flow classification,determining active flows and fair-dropping.
-* Fair-drop is implemented at the input side of VPP forwarding graph. It is implemented in ip4-input node of VPP which is the first node after Dpdk-input node for ipv4 traffic.
+* Fair-drop is implemented at the input side of VPP forwarding graph. It is implemented in ip4-input node of VPP which is the first node after dpdk-input for ipv4 traffic.
 * RSS-hash result from hardware which is stored in mbufs as hash.rss is used to classify flows.
+* Currently the RSS key used is the default intel 82599 rss hash key provided in the datasheet. This key is also available by default in dpdk package.
 
+----
+
+## How to use this repository
 
 $VPP_ROOT = /your/vpp/directory/ ;
 
@@ -23,11 +27,6 @@ $VPP_ROOT = /your/vpp/directory/ ;
 4. Modify the function
     1. Please check the function in this repository for changes that are to be made.
     2. look for the comments "start of extra code; end of extra code" to find what are the change to be made.
-
-#Description
-
-    1.Currently the table size is 1024*4;
-    2.This update contains fair-drop scheduling Algorithm.
 
 #TODO
 
