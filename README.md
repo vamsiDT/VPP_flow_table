@@ -28,9 +28,8 @@
     2. Implementation at input instead of output to save cpu cycles for packets being dropped.
 
 ### TODO
-
-    1. ~~Choose a good hash function for this application and update;~~ Use of hardware hash result solved this issue.
-    2.Add an option to enable or disable the fair-drop scheduling.
-    3.Also add option to enable or disable only on a specific interface.
-    4.Extend this to multi-threading scenario with multiple tx-queues.
-    5.Update README.md :P 
+  1. ~~Choose a good hash function for this application and update;~~ Use of hardware hash result solved this issue.
+  2.Add an option to enable or disable the fair-drop scheduling.
+  3.Also add option to enable or disable only on a specific interface.
+  4.Extend this to multi-threading scenario with multiple tx-queues.
+  5.Update README.md :P 
