@@ -23,10 +23,13 @@
       2. look for the comments "start of extra code; end of extra code" to find the changes to be made.
 
 ----
+### Major changes from previous branches
+    1. Use of hardware hash result instead of calculating during runtime.
+    2. Implementation at input instead of output to save cpu cycles for packets being dropped.
 
 ### TODO
 
-    1.Choose a good hash function for this application and update;
+    1.~~Choose a good hash function for this application and update;~~ Use of hardware hash result solved this issue.
     2.Add an option to enable or disable the fair-drop scheduling.
     3.Also add option to enable or disable only on a specific interface.
     4.Extend this to multi-threading scenario with multiple tx-queues.
