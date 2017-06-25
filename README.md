@@ -1,8 +1,9 @@
 # VPP_flow_table
 
-.VPP (Vector Packet Processor) is a high-speed packet processing engine which runs in user-space and implements kernel bypass techniques to achieve high-speed packet processing.
-This is a modification within VPP src for flow classification,determining active flows and fair-dropping.
-
+* VPP (Vector Packet Processor) is a high-speed packet processing engine which runs in user-space and implements kernel bypass techniques to achieve high-speed packet processing.
+* This is a modification within VPP src for flow classification,determining active flows and fair-dropping.
+* Fair-drop is implemented at the input side of VPP forwarding graph. It is implemented in ip4-input node of VPP which is the first node after Dpdk-input node for ipv4 traffic.
+* RSS-hash result from hardware which is stored in mbufs as hash.rss is used to classify flows.
 
 
 $VPP_ROOT = /your/vpp/directory/ ;
