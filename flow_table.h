@@ -14,7 +14,7 @@
 #ifndef FLOW_TABLE_H
 #define FLOW_TABLE_H
 #define TABLESIZE 4096
-#define ALPHA 1   // ALPHA = Output/Input
+#define ALPHA 1.5   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 384000 //just a random number. Update the value with proper theoritical approach.
 #define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
