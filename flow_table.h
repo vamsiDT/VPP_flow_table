@@ -14,7 +14,7 @@
 #ifndef FLOW_TABLE_H
 #define FLOW_TABLE_H
 #define TABLESIZE 4096
-#define ALPHA 1.5   // ALPHA = Output/Input
+#define ALPHA 0.4   // ALPHA = Output/Input
 #define BETA 0.1    // BETA = Output/Input
 #define BUFFER 384000 //just a random number. Update the value with proper theoritical approach.
 #define THRESHOLD 384000 //just a random number. Update the value with proper theoritical approach.
@@ -22,7 +22,7 @@
 /*Node in the flow table. srcdst is 64 bit divided as |32bitsrcip|32bitdstip| ; swsrcdstport is divided as |32bit swifindex|16bit srcport|16bit dstport|*/
 typedef struct flowcount{
     u32 hash;
-    int vqueue;
+    u32 vqueue;
     struct flowcount * branchnext;
     struct flowcount * update;
 }flowcount_t;
@@ -206,12 +206,14 @@ flowcount_t * flowout(){
 
 /* vstate algorithm */
 always_inline void vstate(flowcount_t * flow, u16 pktlenx,u8 update){
-    flowcount_t * j;
-    u32 served,credit;
-    int oldnbl=nbl+1;
-    credit = (t - old_t)*ALPHA;
-    //printf("%lu\t%lu\n",old_t,t);
+
     if(PREDICT_FALSE(update == 1)){
+        flowcount_t * j;
+        u32 served,credit;
+        int oldnbl=nbl+1;
+        credit = (t - old_t)*ALPHA;
+        //printf("%u\n",credit);
+//        if(PREDICT_FALSE(update == 1)){
         while (oldnbl>nbl && nbl > 0){
             oldnbl = nbl;
             served = credit/nbl;
