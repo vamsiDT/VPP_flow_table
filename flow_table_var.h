@@ -1,4 +1,4 @@
-#include <vnet/ip/flow_table.h>
+#include <dpdk/device/flow_table.h>
 flowcount_t *  nodet[TABLESIZE] ;
 activelist_t * head_af;
 activelist_t * tail_af;
